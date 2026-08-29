@@ -1,0 +1,4194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Singapore Life Simulator V15.1</title>
+
+<style>
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    background: #07111f;
+    color: #f8fafc;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+button {
+    border: 0;
+    border-radius: 10px;
+    padding: 11px 14px;
+    margin: 4px;
+    background: #263449;
+    color: white;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+button:hover {
+    background: #3b4d66;
+}
+
+.primary {
+    background: #c51f2b !important;
+}
+
+.green {
+    background: #15803d !important;
+}
+
+.blue {
+    background: #2563eb !important;
+}
+
+.gold {
+    background: #a16207 !important;
+}
+
+.danger {
+    background: #991b1b !important;
+}
+
+#app {
+    max-width: 1250px;
+    margin: auto;
+    padding: 18px;
+}
+
+header {
+    background: linear-gradient(135deg, #c51f2b, #7f1d1d);
+    padding: 22px;
+    border-radius: 18px;
+    margin-bottom: 14px;
+}
+
+header h1 {
+    margin: 0;
+}
+
+header p {
+    margin-bottom: 0;
+    color: #fee2e2;
+}
+
+.stats {
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    gap: 7px;
+    margin-bottom: 12px;
+}
+
+.stat {
+    background: #172235;
+    border-radius: 10px;
+    padding: 9px;
+    text-align: center;
+}
+
+.stat b {
+    display: block;
+    font-size: 17px;
+    margin-top: 4px;
+}
+
+.layout {
+    display: grid;
+    grid-template-columns: 220px 1fr;
+    gap: 14px;
+}
+
+nav,
+main {
+    background: #111b2c;
+    border-radius: 16px;
+    padding: 14px;
+}
+
+nav {
+    height: max-content;
+}
+
+nav button {
+    width: 100%;
+    text-align: left;
+    background: transparent;
+    margin: 2px 0;
+}
+
+main {
+    min-height: 650px;
+}
+
+.hero {
+    background: linear-gradient(135deg, #1e293b, #172554);
+    padding: 17px;
+    border-radius: 14px;
+    margin-bottom: 12px;
+}
+
+.hero h2 {
+    margin-top: 0;
+}
+
+.card {
+    background: #172235;
+    border-radius: 13px;
+    padding: 14px;
+    margin: 9px 0;
+}
+
+.choice {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 7px;
+}
+
+.choice button {
+    text-align: left;
+    min-height: 65px;
+}
+
+.small {
+    font-size: 12px;
+    color: #aab5c5;
+}
+
+.money {
+    color: #86efac;
+}
+
+.success {
+    background: #052e16;
+    border: 1px solid #166534;
+    padding: 12px;
+    border-radius: 11px;
+}
+
+.warning {
+    background: #422006;
+    border: 1px solid #92400e;
+    padding: 12px;
+    border-radius: 11px;
+}
+
+.log {
+    max-height: 430px;
+    overflow-y: auto;
+}
+
+.log div {
+    padding: 8px 0;
+    border-bottom: 1px solid #ffffff12;
+}
+
+hr {
+    border: 0;
+    border-top: 1px solid #ffffff12;
+    margin: 10px 0;
+}
+
+.badge {
+    display: inline-block;
+    background: #263449;
+    padding: 4px 8px;
+    border-radius: 20px;
+    margin: 2px;
+    font-size: 12px;
+}
+
+footer {
+    text-align: center;
+    color: #64748b;
+    padding: 15px;
+}
+
+@media(max-width:900px) {
+    .layout {
+        grid-template-columns: 1fr;
+    }
+
+    .stats {
+        grid-template-columns: repeat(4, 1fr);
+    }
+
+    nav {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media(max-width:550px) {
+    .stats {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div id="app">
+
+<header>
+    <h1>🇸🇬 Singapore Life Simulator V15.1</h1>
+    <p>
+        Education • Careers • Money • Relationships • SAF • Sport • Media • Politics
+    </p>
+</header>
+
+<div class="stats" id="stats"></div>
+
+<div class="layout">
+
+<nav id="nav"></nav>
+
+<main id="main"></main>
+
+</div>
+
+<footer>
+    Singapore Life Simulator • V15.1
+</footer>
+
+</div>
+
+<script>
+
+/* =========================================================
+   DATA
+========================================================= */
+
+const PRIMARY_SCHOOLS = [
+    ["Raffles Girls' Primary School", 94],
+    ["Nanyang Primary School", 92],
+    ["Tao Nan School", 88],
+    ["Anglo-Chinese School (Primary)", 90]
+];
+
+const SECONDARY_SCHOOLS = [
+    ["Raffles Institution", 97],
+    ["Hwa Chong Institution", 96],
+    ["Nanyang Girls' High School", 95],
+    ["Anglo-Chinese School (Independent)", 94]
+];
+
+const POST_SECONDARY = [
+
+    ["Raffles Institution", "JC", 96],
+    ["Hwa Chong Institution", "JC", 95],
+    ["Victoria Junior College", "JC", 92],
+    ["National Junior College", "JC", 93],
+
+    ["Nanyang Polytechnic", "Poly", 84],
+    ["Singapore Polytechnic", "Poly", 85],
+    ["Ngee Ann Polytechnic", "Poly", 86],
+    ["Temasek Polytechnic", "Poly", 85],
+    ["Republic Polytechnic", "Poly", 82],
+
+    ["ITE College Central", "ITE", 70],
+    ["ITE College East", "ITE", 70],
+    ["ITE College West", "ITE", 70]
+];
+
+const CCAS = [
+    ["National Cadet Corps (NCC)", "discipline", "fitness"],
+    ["Football", "fitness", "discipline"],
+    ["Modern Dance", "fitness", "charisma"],
+    ["Media Club", "charisma", "intelligence"]
+];
+
+const UNIVERSITIES = [
+
+    ["National University of Singapore", "Singapore", 88],
+    ["Nanyang Technological University", "Singapore", 85],
+    ["Singapore Management University", "Singapore", 82],
+    ["Singapore University of Technology and Design", "Singapore", 82],
+    ["Singapore University of Social Sciences", "Singapore", 75],
+    ["Singapore Institute of Technology", "Singapore", 75],
+
+    ["Harvard University", "United States", 99],
+    ["Yale University", "United States", 98],
+    ["MIT", "United States", 99],
+    ["Stanford University", "United States", 99],
+    ["Princeton University", "United States", 99],
+    ["University of Chicago", "United States", 97],
+    ["UC Berkeley", "United States", 96],
+
+    ["University of Oxford", "United Kingdom", 98],
+    ["University of Cambridge", "United Kingdom", 98],
+    ["Imperial College London", "United Kingdom", 96],
+    ["London School of Economics", "United Kingdom", 96],
+
+    ["University of Melbourne", "Australia", 93],
+    ["Australian National University", "Australia", 92],
+    ["University of Sydney", "Australia", 91],
+
+    ["University of Toronto", "Canada", 94],
+    ["University of British Columbia", "Canada", 91],
+
+    ["University of Hong Kong", "Hong Kong", 91],
+    ["University of Tokyo", "Japan", 94],
+    ["ETH Zürich", "Switzerland", 97],
+    ["EPFL", "Switzerland", 95],
+    ["Seoul National University", "South Korea", 93],
+    ["Tsinghua University", "China", 97],
+    ["Peking University", "China", 97],
+    ["University of Amsterdam", "Netherlands", 92]
+];
+
+const COURSES = [
+    "Computer Science",
+    "Business",
+    "Finance",
+    "Economics",
+    "Law",
+    "Medicine",
+    "Engineering",
+    "Political Science",
+    "Communications",
+    "Media Studies",
+    "Psychology",
+    "Biological Sciences",
+    "Mathematics",
+    "Architecture"
+];
+
+const JOBS = [
+
+    [
+        "Google",
+        "Technology",
+        8500,
+        [
+            "Software Engineer",
+            "Senior Software Engineer",
+            "Staff Engineer",
+            "Engineering Manager",
+            "Director of Engineering"
+        ],
+        78
+    ],
+
+    [
+        "Microsoft",
+        "Technology",
+        8200,
+        [
+            "Software Engineer",
+            "Senior Engineer",
+            "Principal Engineer",
+            "Engineering Manager",
+            "Director"
+        ],
+        77
+    ],
+
+    [
+        "Grab",
+        "Technology",
+        7000,
+        [
+            "Software Engineer",
+            "Senior Engineer",
+            "Tech Lead",
+            "Engineering Manager",
+            "Director"
+        ],
+        73
+    ],
+
+    [
+        "Shopee",
+        "Technology",
+        6500,
+        [
+            "Associate",
+            "Senior Associate",
+            "Manager",
+            "Senior Manager",
+            "Director"
+        ],
+        72
+    ],
+
+    [
+        "Sea Group",
+        "Technology",
+        7000,
+        [
+            "Associate",
+            "Senior Associate",
+            "Manager",
+            "Director",
+            "Vice President"
+        ],
+        74
+    ],
+
+    [
+        "DBS",
+        "Banking",
+        6200,
+        [
+            "Analyst",
+            "Associate",
+            "Vice President",
+            "Director",
+            "Managing Director"
+        ],
+        73
+    ],
+
+    [
+        "OCBC",
+        "Banking",
+        6000,
+        [
+            "Analyst",
+            "Associate",
+            "Vice President",
+            "Director",
+            "Managing Director"
+        ],
+        72
+    ],
+
+    [
+        "JPMorgan Chase",
+        "Finance",
+        8500,
+        [
+            "Analyst",
+            "Associate",
+            "Vice President",
+            "Executive Director",
+            "Managing Director"
+        ],
+        80
+    ],
+
+    [
+        "Goldman Sachs",
+        "Finance",
+        9000,
+        [
+            "Analyst",
+            "Associate",
+            "Vice President",
+            "Executive Director",
+            "Managing Director"
+        ],
+        82
+    ],
+
+    [
+        "Deloitte",
+        "Consulting",
+        6000,
+        [
+            "Analyst",
+            "Consultant",
+            "Senior Consultant",
+            "Manager",
+            "Partner"
+        ],
+        70
+    ],
+
+    [
+        "PwC",
+        "Consulting",
+        6000,
+        [
+            "Associate",
+            "Senior Associate",
+            "Manager",
+            "Director",
+            "Partner"
+        ],
+        70
+    ],
+
+    [
+        "Rajah & Tann",
+        "Law",
+        6500,
+        [
+            "Associate",
+            "Senior Associate",
+            "Partner",
+            "Senior Partner",
+            "Managing Partner"
+        ],
+        79
+    ],
+
+    [
+        "Allen & Gledhill",
+        "Law",
+        6800,
+        [
+            "Associate",
+            "Senior Associate",
+            "Partner",
+            "Senior Partner",
+            "Managing Partner"
+        ],
+        81
+    ],
+
+    [
+        "Mediacorp",
+        "Media",
+        4200,
+        [
+            "Production Assistant",
+            "Producer",
+            "Senior Producer",
+            "Executive Producer",
+            "Head of Production"
+        ],
+        65
+    ],
+
+    [
+        "CNA",
+        "Media",
+        4300,
+        [
+            "Reporter",
+            "Correspondent",
+            "Senior Correspondent",
+            "Producer",
+            "Editor"
+        ],
+        68
+    ],
+
+    [
+        "SPH Media",
+        "Media",
+        4000,
+        [
+            "Reporter",
+            "Journalist",
+            "Senior Journalist",
+            "Editor",
+            "Senior Editor"
+        ],
+        65
+    ],
+
+    [
+        "The Straits Times",
+        "Media",
+        4100,
+        [
+            "Reporter",
+            "Journalist",
+            "Senior Journalist",
+            "Deputy Editor",
+            "Editor"
+        ],
+        67
+    ],
+
+    [
+        "Netflix",
+        "Media",
+        6000,
+        [
+            "Content Coordinator",
+            "Content Associate",
+            "Producer",
+            "Senior Producer",
+            "Director"
+        ],
+        74
+    ],
+
+    [
+        "Singapore Airlines",
+        "Aviation",
+        5200,
+        [
+            "Executive",
+            "Senior Executive",
+            "Manager",
+            "Senior Manager",
+            "Director"
+        ],
+        68
+    ],
+
+    [
+        "Changi Airport Group",
+        "Aviation",
+        5000,
+        [
+            "Executive",
+            "Manager",
+            "Senior Manager",
+            "Director",
+            "Executive Director"
+        ],
+        67
+    ],
+
+    [
+        "Pfizer",
+        "Pharma",
+        6200,
+        [
+            "Associate",
+            "Senior Associate",
+            "Manager",
+            "Director",
+            "Head"
+        ],
+        75
+    ],
+
+    [
+        "Roche",
+        "Pharma",
+        6500,
+        [
+            "Associate",
+            "Senior Associate",
+            "Manager",
+            "Director",
+            "Head"
+        ],
+        77
+    ],
+
+    [
+        "Singapore General Hospital",
+        "Medicine",
+        7000,
+        [
+            "Resident Doctor",
+            "Registrar",
+            "Associate Consultant",
+            "Consultant",
+            "Senior Consultant"
+        ],
+        88
+    ],
+
+    [
+        "National University Hospital",
+        "Medicine",
+        7000,
+        [
+            "Resident Doctor",
+            "Registrar",
+            "Associate Consultant",
+            "Consultant",
+            "Senior Consultant"
+        ],
+        88
+    ],
+
+    [
+        "KK Women's and Children's Hospital",
+        "Medicine",
+        6800,
+        [
+            "Resident Doctor",
+            "Registrar",
+            "Associate Consultant",
+            "Consultant",
+            "Senior Consultant"
+        ],
+        87
+    ],
+
+    [
+        "Tan Tock Seng Hospital",
+        "Medicine",
+        6800,
+        [
+            "Resident Doctor",
+            "Registrar",
+            "Associate Consultant",
+            "Consultant",
+            "Senior Consultant"
+        ],
+        87
+    ],
+
+    [
+        "Ministry of Health",
+        "Government",
+        6500,
+        [
+            "Officer",
+            "Senior Officer",
+            "Assistant Director",
+            "Deputy Director",
+            "Director"
+        ],
+        76
+    ],
+
+    [
+        "Ministry of Education",
+        "Government",
+        6200,
+        [
+            "Education Officer",
+            "Senior Officer",
+            "Subject Head",
+            "Vice Principal",
+            "Principal"
+        ],
+        73
+    ],
+
+    [
+        "Ministry of Finance",
+        "Government",
+        6800,
+        [
+            "Executive",
+            "Senior Executive",
+            "Assistant Director",
+            "Deputy Director",
+            "Director"
+        ],
+        78
+    ]
+];
+
+const CARS = [
+    ["Used Toyota Corolla", 28000],
+    ["Honda Civic", 48000],
+    ["Toyota Camry", 65000],
+    ["Mazda CX-5", 72000],
+    ["Tesla Model 3", 90000],
+    ["BMW 3 Series", 155000],
+    ["Mercedes-Benz C-Class", 175000],
+    ["Porsche 718 Cayman", 300000],
+    ["Porsche 911", 520000],
+    ["Lamborghini Huracán", 850000]
+];
+
+const HOUSES = [
+    ["3-room HDB flat", 350000],
+    ["4-room HDB flat", 520000],
+    ["5-room HDB flat", 700000],
+    ["Executive Condominium", 1100000],
+    ["City-fringe condominium", 1800000],
+    ["Luxury Bukit Timah condominium", 3500000],
+    ["Good Class Bungalow", 12000000]
+];
+
+const SAF_RANKS = {
+
+    Man: [
+        "Private",
+        "Lance Corporal",
+        "Corporal",
+        "3rd Sergeant",
+        "Staff Sergeant",
+        "Warrant Officer"
+    ],
+
+    Specialist: [
+        "3rd Sergeant",
+        "2nd Sergeant",
+        "1st Sergeant",
+        "Staff Sergeant",
+        "Master Sergeant"
+    ],
+
+    Officer: [
+        "Officer Cadet",
+        "2nd Lieutenant",
+        "Lieutenant",
+        "Captain",
+        "Major",
+        "Lieutenant Colonel",
+        "Colonel"
+    ]
+};
+
+const ACTIVITIES = {
+
+    child: [
+        ["🧸 Play", "happiness", 5],
+        ["📚 Picture Books", "intelligence", 2],
+        ["🏃 Play Outside", "fitness", 4],
+        ["👨‍👩‍👧 Family Time", "happiness", 5]
+    ],
+
+    school: [
+        ["📚 Study", "intelligence", 3],
+        ["🏋️ Training", "fitness", 3],
+        ["👥 Hang Out", "charisma", 2],
+        ["🎮 Gaming", "happiness", 3],
+        ["🎨 Creative Project", "charisma", 2]
+    ],
+
+    teen: [
+        ["📚 Study Hard", "intelligence", 4],
+        ["🏋️ Gym", "fitness", 4],
+        ["🎬 Make Content", "charisma", 3],
+        ["🍜 Eat Out", "happiness", 5],
+        ["🧑‍🤝‍🧑 Socialise", "charisma", 3]
+    ],
+
+    adult: [
+        ["📚 Professional Course", "intelligence", 3],
+        ["🏋️ Gym", "fitness", 3],
+        ["✈️ Holiday", "happiness", 10],
+        ["🍜 Restaurant", "happiness", 6],
+        ["🤝 Volunteer", "reputation", 3],
+        ["🎮 Gaming", "happiness", 4]
+    ],
+
+    retired: [
+        ["🌴 Holiday", "happiness", 10],
+        ["🏋️ Exercise", "fitness", 3],
+        ["📖 Read", "intelligence", 2],
+        ["👨‍👩‍👧 Family Time", "happiness", 6],
+        ["🤝 Volunteer", "reputation", 3]
+    ]
+};
+
+
+/* =========================================================
+   BASE PLAYER
+========================================================= */
+
+const BASE_PLAYER = {
+
+    age: 0,
+
+    money: 0,
+
+    intelligence: 65,
+    health: 85,
+    happiness: 70,
+    charisma: 60,
+    discipline: 60,
+    fitness: 65,
+    reputation: 20,
+
+    family: "",
+    parentsIncome: 0,
+
+    stage: "Baby",
+
+    school: "",
+    schoolType: "",
+
+    cca: "",
+    ccaLevel: 0,
+
+    postSecondary: "",
+
+    university: "",
+    universityCountry: "",
+    course: "",
+    degree: "",
+
+    degrees: [],
+    postgraduate: [],
+
+    country: "Singapore",
+
+    career: "",
+    company: "",
+    role: "",
+    careerLevel: 0,
+    salary: 0,
+    yearsInJob: 0,
+
+    ns: false,
+    nsCompleted: false,
+    reservist: false,
+
+    safType: "",
+    safRank: "",
+    safYears: 0,
+
+    relationships: [],
+    married: false,
+    children: 0,
+
+    cars: [],
+    houses: [],
+    investments: 0,
+
+    athlete: "",
+    athleteClub: "",
+    athleteSalary: 0,
+
+    politicalParty: "",
+    mp: false,
+    cabinet: false,
+    minister: "",
+    pm: false,
+    president: false,
+    electionWins: 0,
+
+    logs: [],
+
+    alive: true
+};
+
+
+/* =========================================================
+   HELPERS
+========================================================= */
+
+let game = null;
+
+function clone(obj) {
+    return JSON.parse(JSON.stringify(obj));
+}
+
+function money(n) {
+    return "$" + Math.round(n || 0).toLocaleString();
+}
+
+function chance(probability) {
+    return Math.random() < Math.max(0, Math.min(1, probability));
+}
+
+function addLog(text) {
+
+    game.logs.unshift(
+        `<div>
+            <span class="small">Age ${game.age}</span>
+            — ${text}
+        </div>`
+    );
+
+    game.logs = game.logs.slice(0, 150);
+}
+
+function saveGame() {
+
+    if (!game) return;
+
+    localStorage.setItem(
+        "SG_LIFE_V15_1",
+        JSON.stringify(game)
+    );
+}
+
+function loadGame() {
+
+    const saved = localStorage.getItem("SG_LIFE_V15_1");
+
+    if (!saved) {
+        alert("No saved game found.");
+        return;
+    }
+
+    game = JSON.parse(saved);
+
+    render();
+}
+
+function button(text, action, cls = "") {
+
+    return `<button class="${cls}" onclick="${action}">
+        ${text}
+    </button>`;
+}
+
+
+/* =========================================================
+   START
+========================================================= */
+
+function startGame() {
+
+    game = clone(BASE_PLAYER);
+
+    const r = Math.random();
+
+    if (r < 0.20) {
+
+        game.family = "Poor";
+        game.parentsIncome = 2200;
+        game.money = 300;
+
+    } else if (r < 0.75) {
+
+        game.family = "Middle Class";
+        game.parentsIncome = 6500;
+        game.money = 2500;
+
+    } else if (r < 0.95) {
+
+        game.family = "Upper Middle Class";
+        game.parentsIncome = 15000;
+        game.money = 25000;
+
+    } else {
+
+        game.family = "Rich";
+        game.parentsIncome = 50000;
+        game.money = 250000;
+    }
+
+    game.intelligence =
+        Math.floor(Math.random() * 31) + 55;
+
+    game.charisma =
+        Math.floor(Math.random() * 31) + 50;
+
+    game.discipline =
+        Math.floor(Math.random() * 31) + 50;
+
+    game.fitness =
+        Math.floor(Math.random() * 31) + 50;
+
+    addLog(
+        `You were born into a <b>${game.family}</b> family.`
+    );
+
+    saveGame();
+
+    render();
+}
+
+
+/* =========================================================
+   NAVIGATION
+========================================================= */
+
+function renderStats() {
+
+    if (!game) return;
+
+    document.getElementById("stats").innerHTML = `
+
+        <div class="stat">
+            <span class="small">Age</span>
+            <b>${game.age}</b>
+        </div>
+
+        <div class="stat">
+            <span class="small">Cash</span>
+            <b>${money(game.money)}</b>
+        </div>
+
+        <div class="stat">
+            <span class="small">Intelligence</span>
+            <b>${game.intelligence}</b>
+        </div>
+
+        <div class="stat">
+            <span class="small">Health</span>
+            <b>${game.health}</b>
+        </div>
+
+        <div class="stat">
+            <span class="small">Happiness</span>
+            <b>${game.happiness}</b>
+        </div>
+
+        <div class="stat">
+            <span class="small">Charisma</span>
+            <b>${game.charisma}</b>
+        </div>
+
+        <div class="stat">
+            <span class="small">Discipline</span>
+            <b>${game.discipline}</b>
+        </div>
+
+        <div class="stat">
+            <span class="small">Fitness</span>
+            <b>${game.fitness}</b>
+        </div>
+    `;
+}
+
+function renderNav() {
+
+    document.getElementById("nav").innerHTML =
+
+        button("🏠 Life", "showPage('home')") +
+
+        button("🎓 Education", "showPage('education')") +
+
+        button("🎯 Activities", "showPage('activity')") +
+
+        button("💼 Career", "showPage('career')") +
+
+        button("💰 Money & Assets", "showPage('money')") +
+
+        button("❤️ Relationships", "showPage('relationships')") +
+
+        button("✈️ Emigration", "showPage('emigration')") +
+
+        button("🏆 Athlete Mode", "showPage('athlete')") +
+
+        button("🎬 Media", "showPage('media')") +
+
+        button("🪖 SAF", "showPage('saf')") +
+
+        button("🏛️ Politics", "showPage('politics')") +
+
+        button("📜 Life Log", "showPage('log')") +
+
+        "<hr>" +
+
+        button("⏩ AGE UP", "ageUp()", "primary") +
+
+        button("💾 SAVE", "saveGame();alert('Game saved!')");
+
+}
+
+function showPage(page) {
+
+    const pages = {
+
+        home: homePage,
+        education: educationPage,
+        activity: activityPage,
+        career: careerPage,
+        money: moneyPage,
+        relationships: relationshipsPage,
+        emigration: emigrationPage,
+        athlete: athletePage,
+        media: mediaPage,
+        saf: safPage,
+        politics: politicsPage,
+        log: logPage
+    };
+
+    if (pages[page]) {
+        pages[page]();
+    }
+}
+
+
+/* =========================================================
+   HOME
+========================================================= */
+
+function homePage() {
+
+    document.getElementById("main").innerHTML = `
+
+        <div class="hero">
+
+            <h2>
+                ${game.age === 0
+                    ? "👶 Your Life Begins"
+                    : "🇸🇬 Your Life"}
+            </h2>
+
+            <p>
+                <b>Family:</b>
+                ${game.family}
+            </p>
+
+            <p>
+                <b>Stage:</b>
+                ${game.stage}
+            </p>
+
+            <p>
+                <b>Country:</b>
+                ${game.country}
+            </p>
+
+            <p>
+                <b>Education:</b>
+                ${game.university ||
+                  game.school ||
+                  "Not started"}
+            </p>
+
+            <p>
+                <b>Career:</b>
+                ${
+                    game.role
+                    ? `${game.role} @ ${game.company}`
+                    : "None"
+                }
+            </p>
+
+        </div>
+
+
+        <div class="card">
+
+            <h3>Quick Actions</h3>
+
+            ${button(
+                "🎯 Activities",
+                "showPage('activity')"
+            )}
+
+            ${game.age >= 6
+                ? button(
+                    "🎓 Education",
+                    "showPage('education')",
+                    "blue"
+                )
+                : ""
+            }
+
+            ${game.age >= 18
+                ? button(
+                    "💼 Career",
+                    "showPage('career')",
+                    "green"
+                )
+                : ""
+            }
+
+            ${game.age >= 18
+                ? button(
+                    "❤️ Relationships",
+                    "showPage('relationships')"
+                )
+                : ""
+            }
+
+        </div>
+
+
+        <div class="card">
+
+            <h3>Recent Events</h3>
+
+            <div class="log">
+                ${
+                    game.logs.slice(0,10).join("")
+                    ||
+                    "Your story begins here."
+                }
+            </div>
+
+        </div>
+    `;
+}
+
+
+/* =========================================================
+   EDUCATION
+========================================================= */
+
+function educationPage() {
+
+    let html = `
+
+        <div class="hero">
+
+            <h2>🎓 Education</h2>
+
+            <p>
+                Your education determines many of your
+                future opportunities.
+            </p>
+
+        </div>
+    `;
+
+
+    if (game.age < 6) {
+
+        html += `
+
+            <div class="card">
+
+                <h3>🧸 Preschool</h3>
+
+                <p>
+                    You are still in early childhood.
+                    Primary school selection unlocks at age 6.
+                </p>
+
+            </div>
+        `;
+    }
+
+
+    if (
+        game.age >= 6 &&
+        game.age <= 11 &&
+        !game.schoolType
+    ) {
+
+        html += `
+
+            <div class="card">
+
+                <h3>
+                    🏫 Choose Your Primary School
+                </h3>
+
+                <div class="choice">
+
+                    ${
+                        PRIMARY_SCHOOLS.map(
+                            (school,index) => `
+
+                                <button
+                                    onclick="choosePrimary(${index})"
+                                >
+
+                                    <b>
+                                        ${school[0]}
+                                    </b>
+
+                                    <br>
+
+                                    <span class="small">
+                                        Selectivity:
+                                        ${school[1]}
+                                    </span>
+
+                                </button>
+                            `
+                        ).join("")
+                    }
+
+                </div>
+
+            </div>
+        `;
+    }
+
+
+    if (
+        game.age >= 12 &&
+        game.age <= 15
+    ) {
+
+        html += `
+
+            <div class="card">
+
+                <h3>
+                    🏫 Secondary School
+                </h3>
+
+                <div class="choice">
+
+                    ${
+                        SECONDARY_SCHOOLS.map(
+                            (school,index) => `
+
+                                <button
+                                    onclick="chooseSecondary(${index})"
+                                >
+
+                                    <b>
+                                        ${school[0]}
+                                    </b>
+
+                                    <br>
+
+                                    <span class="small">
+                                        Selectivity:
+                                        ${school[1]}
+                                    </span>
+
+                                </button>
+                            `
+                        ).join("")
+                    }
+
+                </div>
+
+            </div>
+        `;
+    }
+
+
+    if (
+        game.age >= 6 &&
+        game.age <= 18 &&
+        !game.cca
+    ) {
+
+        html += `
+
+            <div class="card">
+
+                <h3>
+                    🎯 Choose a CCA
+                </h3>
+
+                <div class="choice">
+
+                    ${
+                        CCAS.map(
+                            (cca,index) => `
+
+                                <button
+                                    onclick="joinCCA(${index})"
+                                >
+
+                                    <b>
+                                        ${cca[0]}
+                                    </b>
+
+                                    <br>
+
+                                    <span class="small">
+                                        ${cca[1]} +
+                                        ${cca[2]}
+                                    </span>
+
+                                </button>
+                            `
+                        ).join("")
+                    }
+
+                </div>
+
+            </div>
+        `;
+    }
+
+
+    if (
+        game.age >= 16 &&
+        !game.postSecondary
+    ) {
+
+        html += `
+
+            <div class="card">
+
+                <h3>
+                    📚 Choose JC / Polytechnic / ITE
+                </h3>
+
+                <div class="choice">
+
+                    ${
+                        POST_SECONDARY.map(
+                            (school,index) => `
+
+                                <button
+                                    onclick="choosePostSecondary(${index})"
+                                >
+
+                                    <b>
+                                        ${school[0]}
+                                    </b>
+
+                                    <br>
+
+                                    <span class="small">
+                                        ${school[1]}
+                                        · Selectivity
+                                        ${school[2]}
+                                    </span>
+
+                                </button>
+                            `
+                        ).join("")
+                    }
+
+                </div>
+
+            </div>
+        `;
+    }
+
+
+    if (
+        game.age >= 18 &&
+        !game.university
+    ) {
+
+        html += `
+
+            <div class="card">
+
+                <h3>
+                    🎓 Choose University
+                </h3>
+
+                <p class="small">
+                    Overseas universities require at least
+                    90 Intelligence. Admission is not guaranteed.
+                </p>
+
+                <div class="choice">
+
+                    ${
+                        UNIVERSITIES.map(
+                            (uni,index) => `
+
+                                <button
+                                    onclick="applyUniversity(${index})"
+                                >
+
+                                    <b>
+                                        ${uni[0]}
+                                    </b>
+
+                                    <br>
+
+                                    ${uni[1]}
+
+                                    <br>
+
+                                    <span class="small">
+                                        Selectivity:
+                                        ${uni[2]}
+                                    </span>
+
+                                </button>
+                            `
+                        ).join("")
+                    }
+
+                </div>
+
+            </div>
+        `;
+    }
+
+
+    if (
+        game.university &&
+        !game.course
+    ) {
+
+        html += `
+
+            <div class="card">
+
+                <h3>
+                    📖 Choose Your Course
+                </h3>
+
+                <p>
+                    ${game.university}
+                </p>
+
+                <div class="choice">
+
+                    ${
+                        COURSES.map(
+                            (course,index) => `
+
+                                <button
+                                    onclick="chooseCourse(${index})"
+                                >
+
+                                    ${course}
+
+                                </button>
+                            `
+                        ).join("")
+                    }
+
+                </div>
+
+            </div>
+        `;
+    }
+
+
+    if (game.degree) {
+
+        html += `
+
+            <div class="success">
+
+                🎓 <b>
+                    ${game.degree}
+                </b>
+
+                <br>
+
+                ${game.course}
+
+                <br>
+
+                ${game.university}
+
+            </div>
+        `;
+    }
+
+
+    if (game.age >= 22) {
+
+        html += `
+
+            <div class="card">
+
+                <h3>
+                    🎓 Postgraduate Education
+                </h3>
+
+                ${button(
+                    "Master's Degree",
+                    "postgraduate('Masters')",
+                    "blue"
+                )}
+
+                ${button(
+                    "MBA",
+                    "postgraduate('MBA')",
+                    "blue"
+                )}
+
+                ${button(
+                    "JD",
+                    "postgraduate('JD')",
+                    "blue"
+                )}
+
+                ${button(
+                    "MD",
+                    "postgraduate('MD')",
+                    "blue"
+                )}
+
+                ${button(
+                    "PhD",
+                    "postgraduate('PhD')",
+                    "blue"
+                )}
+
+                <p class="small">
+                    MBA requires Business, Finance or Economics.
+                    JD requires Law.
+                    MD requires Medicine or Biological Sciences.
+                </p>
+
+            </div>
+        `;
+    }
+
+
+    document.getElementById("main").innerHTML = html;
+}
+
+
+/* =========================================================
+   EDUCATION FUNCTIONS
+========================================================= */
+
+function choosePrimary(index) {
+
+    const school = PRIMARY_SCHOOLS[index];
+
+    const score =
+        game.intelligence * 0.75 +
+        game.discipline * 0.25;
+
+    const probability =
+        0.18 +
+        (score - school[1]) / 32;
+
+    if (!chance(probability)) {
+
+        addLog(
+            `❌ ${school[0]} rejected you.`
+        );
+
+        educationPage();
+        return;
+    }
+
+    game.school = school[0];
+    game.schoolType = "primary";
+    game.stage = "Primary School";
+
+    addLog(
+        `🏫 Accepted into <b>${school[0]}</b>.`
+    );
+
+    saveGame();
+
+    educationPage();
+}
+
+
+function chooseSecondary(index) {
+
+    const school = SECONDARY_SCHOOLS[index];
+
+    const score =
+        game.intelligence * 0.7 +
+        game.discipline * 0.25 +
+        game.ccaLevel * 3;
+
+    const probability =
+        0.15 +
+        (score - school[1]) / 30;
+
+    if (!chance(probability)) {
+
+        addLog(
+            `❌ ${school[0]} rejected you.`
+        );
+
+        educationPage();
+        return;
+    }
+
+    game.school = school[0];
+    game.schoolType = "secondary";
+    game.stage = "Secondary School";
+
+    addLog(
+        `🏫 Accepted into <b>${school[0]}</b>.`
+    );
+
+    saveGame();
+
+    educationPage();
+}
+
+
+function joinCCA(index) {
+
+    const cca = CCAS[index];
+
+    game.cca = cca[0];
+    game.ccaLevel = 1;
+
+    game[cca[1]] += 4;
+    game[cca[2]] += 3;
+
+    addLog(
+        `🎯 Joined <b>${cca[0]}</b>.`
+    );
+
+    saveGame();
+
+    educationPage();
+}
+
+
+function choosePostSecondary(index) {
+
+    const school = POST_SECONDARY[index];
+
+    const score =
+        game.intelligence * 0.65 +
+        game.discipline * 0.35;
+
+    const probability =
+        0.18 +
+        (score - school[2]) / 38;
+
+    if (!chance(probability)) {
+
+        addLog(
+            `❌ ${school[0]} rejected you.`
+        );
+
+        educationPage();
+        return;
+    }
+
+    game.postSecondary = school[1];
+    game.school = school[0];
+    game.stage = school[1];
+
+    addLog(
+        `📚 Accepted into <b>${school[0]}</b>.`
+    );
+
+    saveGame();
+
+    educationPage();
+}
+
+
+function applyUniversity(index) {
+
+    const uni = UNIVERSITIES[index];
+
+    if (
+        uni[1] !== "Singapore" &&
+        game.intelligence < 90
+    ) {
+
+        addLog(
+            `❌ ${uni[0]} requires 90+ Intelligence.`
+        );
+
+        educationPage();
+        return;
+    }
+
+    const score =
+        game.intelligence * 0.55 +
+        game.discipline * 0.20 +
+        game.charisma * 0.10 +
+        game.ccaLevel * 3;
+
+    const probability =
+        0.06 +
+        (score - uni[2] + 10) / 100;
+
+    if (!chance(probability)) {
+
+        addLog(
+            `❌ ${uni[0]} rejected your application.`
+        );
+
+        educationPage();
+        return;
+    }
+
+    game.university = uni[0];
+    game.universityCountry = uni[1];
+    game.stage = "University";
+
+    addLog(
+        `🎓 Accepted to <b>${uni[0]}</b>.`
+    );
+
+    saveGame();
+
+    educationPage();
+}
+
+
+function chooseCourse(index) {
+
+    const course = COURSES[index];
+
+    const degrees = {
+
+        "Computer Science": "BSc Computer Science",
+        "Business": "Bachelor of Business",
+        "Finance": "BSc Finance",
+        "Economics": "BSc Economics",
+        "Law": "LLB Law",
+        "Medicine": "MBBS Medicine",
+        "Engineering": "BEng Engineering",
+        "Political Science": "BA Political Science",
+        "Communications": "BA Communications",
+        "Media Studies": "BA Media Studies",
+        "Psychology": "BA Psychology",
+        "Biological Sciences": "BSc Biological Sciences",
+        "Mathematics": "BSc Mathematics",
+        "Architecture": "BArch Architecture"
+    };
+
+    game.course = course;
+
+    game.degree = degrees[course];
+
+    game.degrees.push(game.degree);
+
+    addLog(
+        `📚 Chose <b>${course}</b>.`
+    );
+
+    saveGame();
+
+    educationPage();
+}
+
+
+function postgraduate(type) {
+
+    if (
+        type === "MBA" &&
+        ![
+            "Business",
+            "Finance",
+            "Economics"
+        ].includes(game.course)
+    ) {
+
+        addLog(
+            "❌ MBA requires Business, Finance or Economics."
+        );
+
+        educationPage();
+        return;
+    }
+
+
+    if (
+        type === "JD" &&
+        game.course !== "Law"
+    ) {
+
+        addLog(
+            "❌ JD requires Law."
+        );
+
+        educationPage();
+        return;
+    }
+
+
+    if (
+        type === "MD" &&
+        ![
+            "Medicine",
+            "Biological Sciences"
+        ].includes(game.course)
+    ) {
+
+        addLog(
+            "❌ MD requires Medicine or Biological Sciences."
+        );
+
+        educationPage();
+        return;
+    }
+
+
+    let degreeName;
+
+    if (type === "Masters")
+        degreeName = "Master's Degree";
+
+    if (type === "MBA")
+        degreeName = "MBA";
+
+    if (type === "JD")
+        degreeName = "Juris Doctor (JD)";
+
+    if (type === "MD")
+        degreeName = "Doctor of Medicine (MD)";
+
+    if (type === "PhD")
+        degreeName = "PhD";
+
+
+    game.postgraduate.push(degreeName);
+
+    addLog(
+        `🎓 Completed <b>${degreeName}</b>.`
+    );
+
+    saveGame();
+
+    educationPage();
+}
+
+
+/* =========================================================
+   ACTIVITIES
+========================================================= */
+
+function activityPage() {
+
+    let type = "adult";
+
+    if (game.age < 6)
+        type = "child";
+
+    else if (game.age < 13)
+        type = "school";
+
+    else if (game.age < 18)
+        type = "teen";
+
+    else if (game.age >= 65)
+        type = "retired";
+
+
+    const activities = ACTIVITIES[type];
+
+
+    document.getElementById("main").innerHTML = `
+
+        <div class="hero">
+
+            <h2>
+                🎯 Activities
+            </h2>
+
+            <p>
+                Do things during the year without ageing up.
+            </p>
+
+        </div>
+
+
+        <div class="choice">
+
+            ${
+                activities.map(
+                    (activity,index) => `
+
+                        <button
+                            onclick="doActivity('${type}',${index})"
+                        >
+
+                            <b>
+                                ${activity[0]}
+                            </b>
+
+                            <br>
+
+                            <span class="small">
+                                +${activity[2]}
+                                ${activity[1]}
+                            </span>
+
+                        </button>
+                    `
+                ).join("")
+            }
+
+        </div>
+
+
+        <div class="card">
+
+            <h3>
+                🎯 CCA
+            </h3>
+
+            ${
+                game.cca
+                ? `
+                    <b>${game.cca}</b>
+                    <br>
+                    Level ${game.ccaLevel}
+                  `
+                : "No CCA selected."
+            }
+
+        </div>
+    `;
+}
+
+
+function doActivity(type,index) {
+
+    const activity = ACTIVITIES[type][index];
+
+    let cost = 0;
+
+    if (activity[0].startsWith("✈️"))
+        cost = 2000;
+
+    if (activity[0].startsWith("🍜"))
+        cost = 80;
+
+
+    if (game.money < cost) {
+
+        addLog(
+            "❌ You cannot afford that activity."
+        );
+
+        activityPage();
+        return;
+    }
+
+
+    game.money -= cost;
+
+
+    if (activity[1] === "reputation") {
+
+        game.reputation =
+            Math.min(
+                100,
+                game.reputation + activity[2]
+            );
+
+    } else {
+
+        game[activity[1]] =
+            Math.min(
+                100,
+                game[activity[1]] + activity[2]
+            );
+    }
+
+
+    addLog(
+        `🎯 ${activity[0]}.`
+    );
+
+    saveGame();
+
+    renderStats();
+
+    activityPage();
+}
+
+
+/* =========================================================
+   CAREER
+========================================================= */
+
+function careerPage() {
+
+    let html = `
+
+        <div class="hero">
+
+            <h2>
+                💼 Career
+            </h2>
+
+            <p>
+                Find jobs, get rejected, earn salaries,
+                gain experience and get promoted.
+            </p>
+
+        </div>
+    `;
+
+
+    if (game.career) {
+
+        html += `
+
+            <div class="success">
+
+                <b>
+                    ${game.role}
+                </b>
+
+                @
+
+                <b>
+                    ${game.company}
+                </b>
+
+                <br><br>
+
+                Monthly salary:
+                <span class="money">
+                    ${money(game.salary)}
+                </span>
+
+                <br>
+
+                Annual salary:
+                <span class="money">
+                    ${money(game.salary * 12)}
+                </span>
+
+                <br>
+
+                Years in role:
+                ${game.yearsInJob}
+
+                <br>
+
+                Career level:
+                ${game.careerLevel + 1}/5
+
+            </div>
+
+            ${button(
+                "📈 Work Another Year",
+                "workYear()",
+                "green"
+            )}
+
+            ${button(
+                "🚪 Quit Job",
+                "quitJob()",
+                "danger"
+            )}
+        `;
+    }
+
+
+    if (game.age >= 18) {
+
+        html += `
+
+            <div class="card">
+
+                <h3>
+                    🔎 Job Finder
+                </h3>
+
+                <div class="choice">
+
+                    ${
+                        JOBS.map(
+                            (job,index) => `
+
+                                <button
+                                    onclick="applyJob(${index})"
+                                >
+
+                                    <b>
+                                        ${job[0]}
+                                    </b>
+
+                                    <br>
+
+                                    ${job[1]}
+
+                                    <br>
+
+                                    <span class="small">
+                                        ${money(job[2])}/month
+                                        <br>
+                                        Entry requirement:
+                                        ${job[4]}+
+                                    </span>
+
+                                </button>
+                            `
+                        ).join("")
+                    }
+
+                </div>
+
+            </div>
+        `;
+    }
+
+
+    document.getElementById("main").innerHTML = html;
+}
+
+
+function applyJob(index) {
+
+    const job = JOBS[index];
+
+    let score =
+        game.intelligence * 0.40 +
+        game.discipline * 0.20 +
+        game.charisma * 0.20 +
+        game.fitness * 0.05;
+
+
+    if (game.degree)
+        score += 12;
+
+    score += game.postgraduate.length * 3;
+
+
+    if (
+        game.course === "Law" &&
+        job[1] === "Law"
+    )
+        score += 15;
+
+
+    if (
+        game.course === "Medicine" &&
+        job[1] === "Medicine"
+    )
+        score += 18;
+
+
+    if (
+        game.course === "Computer Science" &&
+        job[1] === "Technology"
+    )
+        score += 15;
+
+
+    if (
+        game.course === "Media Studies" &&
+        job[1] === "Media"
+    )
+        score += 15;
+
+
+    if (!chance(
+        0.07 +
+        (score - job[4]) / 85
+    )) {
+
+        addLog(
+            `❌ ${job[0]} rejected your application.`
+        );
+
+        careerPage();
+        return;
+    }
+
+
+    game.company = job[0];
+    game.career = job[1];
+    game.role = job[3][0];
+
+    game.careerLevel = 0;
+    game.salary = job[2];
+    game.yearsInJob = 0;
+
+    game.stage = "Working";
+
+
+    addLog(
+        `💼 Hired by <b>${job[0]}</b>
+        as ${game.role}.`
+    );
+
+    saveGame();
+
+    careerPage();
+}
+
+
+function workYear() {
+
+    if (!game.career)
+        return;
+
+
+    game.yearsInJob++;
+
+
+    game.money += game.salary * 12;
+
+
+    addLog(
+        `💰 Annual salary paid:
+        <b>${money(game.salary * 12)}</b>.`
+    );
+
+
+    if (
+        game.yearsInJob >= 2 &&
+        game.careerLevel < 4 &&
+        chance(0.65) &&
+        game.career !== "SAF"
+    ) {
+
+        game.careerLevel++;
+
+        const job =
+            JOBS.find(
+                x => x[0] === game.company
+            );
+
+
+        if (job) {
+
+            game.role =
+                job[3][game.careerLevel];
+
+            game.salary =
+                Math.round(
+                    game.salary * 1.20
+                );
+        }
+
+
+        addLog(
+            `📈 Promoted to
+            <b>${game.role}</b>.`
+        );
+    }
+
+
+    saveGame();
+
+    careerPage();
+}
+
+
+function quitJob() {
+
+    addLog(
+        `🚪 You left ${game.company}.`
+    );
+
+    game.company = "";
+    game.career = "";
+    game.role = "";
+    game.salary = 0;
+    game.careerLevel = 0;
+    game.yearsInJob = 0;
+
+    saveGame();
+
+    careerPage();
+}
+
+
+/* =========================================================
+   MONEY
+========================================================= */
+
+function moneyPage() {
+
+    document.getElementById("main").innerHTML = `
+
+        <div class="hero">
+
+            <h2>
+                💰 Money & Assets
+            </h2>
+
+            <p>
+                Spend your salary and build your wealth.
+            </p>
+
+        </div>
+
+
+        <div class="card">
+
+            Cash:
+            <b class="money">
+                ${money(game.money)}
+            </b>
+
+            <br>
+
+            Investments:
+            <b class="money">
+                ${money(game.investments)}
+            </b>
+
+            <br>
+
+            Cars:
+            ${game.cars.length}
+
+            <br>
+
+            Properties:
+            ${game.houses.length}
+
+        </div>
+
+
+        <div class="card">
+
+            <h3>
+                🚗 Cars
+            </h3>
+
+            <div class="choice">
+
+                ${
+                    CARS.map(
+                        (car,index) => `
+
+                            <button
+                                onclick="buyCar(${index})"
+                            >
+
+                                <b>
+                                    ${car[0]}
+                                </b>
+
+                                <br>
+
+                                ${money(car[1])}
+
+                            </button>
+                        `
+                    ).join("")
+                }
+
+            </div>
+
+        </div>
+
+
+        <div class="card">
+
+            <h3>
+                🏠 Properties
+            </h3>
+
+            <div class="choice">
+
+                ${
+                    HOUSES.map(
+                        (house,index) => `
+
+                            <button
+                                onclick="buyHouse(${index})"
+                            >
+
+                                <b>
+                                    ${house[0]}
+                                </b>
+
+                                <br>
+
+                                ${money(house[1])}
+
+                            </button>
+                        `
+                    ).join("")
+                }
+
+            </div>
+
+        </div>
+
+
+        <div class="card">
+
+            <h3>
+                📈 Investments
+            </h3>
+
+            ${button(
+                "Invest $10,000",
+                "investMoney(10000)",
+                "green"
+            )}
+
+            ${button(
+                "Invest $50,000",
+                "investMoney(50000)",
+                "green"
+            )}
+
+            ${button(
+                "Invest $100,000",
+                "investMoney(100000)",
+                "green"
+            )}
+
+            ${button(
+                "Liquidate Investments",
+                "liquidateInvestments()",
+                "blue"
+            )}
+
+        </div>
+    `;
+}
+
+
+function buyCar(index) {
+
+    const car = CARS[index];
+
+    if (game.money < car[1]) {
+
+        addLog(
+            "❌ Not enough money for that car."
+        );
+
+        moneyPage();
+        return;
+    }
+
+
+    game.money -= car[1];
+
+    game.cars.push(car[0]);
+
+    addLog(
+        `🚗 Bought <b>${car[0]}</b>.`
+    );
+
+    saveGame();
+
+    moneyPage();
+}
+
+
+function buyHouse(index) {
+
+    const house = HOUSES[index];
+
+    if (game.money < house[1]) {
+
+        addLog(
+            "❌ Not enough money for that property."
+        );
+
+        moneyPage();
+        return;
+    }
+
+
+    game.money -= house[1];
+
+    game.houses.push(house[0]);
+
+    addLog(
+        `🏠 Bought <b>${house[0]}</b>.`
+    );
+
+    saveGame();
+
+    moneyPage();
+}
+
+
+function investMoney(amount) {
+
+    if (game.money < amount) {
+
+        addLog(
+            "❌ Not enough money to invest."
+        );
+
+        moneyPage();
+        return;
+    }
+
+
+    game.money -= amount;
+
+    game.investments += amount;
+
+    addLog(
+        `📈 Invested ${money(amount)}.`
+    );
+
+    saveGame();
+
+    moneyPage();
+}
+
+
+function liquidateInvestments() {
+
+    if (!game.investments) {
+
+        addLog(
+            "❌ You have no investments."
+        );
+
+        moneyPage();
+        return;
+    }
+
+
+    const result =
+        Math.round(
+            game.investments *
+            (0.75 + Math.random() * 0.60)
+        );
+
+
+    game.money += result;
+
+    game.investments = 0;
+
+
+    addLog(
+        `📈 Liquidated investments for
+        <b>${money(result)}</b>.`
+    );
+
+    saveGame();
+
+    moneyPage();
+}
+
+
+/* =========================================================
+   RELATIONSHIPS
+========================================================= */
+
+function relationshipsPage() {
+
+    let html = `
+
+        <div class="hero">
+
+            <h2>
+                ❤️ Relationships
+            </h2>
+
+            <p>
+                Meet people, build friendships,
+                date, marry and have children.
+            </p>
+
+        </div>
+    `;
+
+
+    if (game.relationships.length) {
+
+        game.relationships.forEach(
+            (person,index) => {
+
+                html += `
+
+                    <div class="card">
+
+                        <b>
+                            ${person.name}
+                        </b>
+
+                        · ${person.age}
+
+                        <br>
+
+                        <span class="small">
+                            ${person.status}
+                        </span>
+
+                        <br>
+
+                        ${button(
+                            "💬 Spend Time",
+                            `interact(${index})`
+                        )}
+
+                        ${
+                            !game.married
+                            ? button(
+                                "❤️ Date",
+                                `datePerson(${index})`,
+                                "blue"
+                            )
+                            : ""
+                        }
+
+                    </div>
+                `;
+            }
+        );
+
+    } else {
+
+        html += `
+            <div class="card">
+                No significant relationships yet.
+            </div>
+        `;
+    }
+
+
+    if (game.age >= 18) {
+
+        html += button(
+            "👤 Meet Someone",
+            "meetPerson()",
+            "green"
+        );
+    }
+
+
+    if (game.married) {
+
+        html += `
+
+            <div class="success">
+
+                💍 Married
+
+                <br>
+
+                Children:
+                ${game.children}
+
+                ${
+                    game.children < 4
+                    ? button(
+                        "👶 Have Child",
+                        "haveChild()",
+                        "green"
+                    )
+                    : ""
+                }
+
+            </div>
+        `;
+    }
+
+
+    document.getElementById("main").innerHTML = html;
+}
+
+
+function meetPerson() {
+
+    const names = [
+
+        "Alicia",
+        "Benjamin",
+        "Chloe",
+        "Daniel",
+        "Emily",
+        "Fiona",
+        "Gabriel",
+        "Hannah",
+        "Isaac",
+        "Jasmine",
+        "Marcus",
+        "Nicole"
+
+    ];
+
+
+    const person = {
+
+        name:
+            names[
+                Math.floor(
+                    Math.random() * names.length
+                )
+            ],
+
+        age:
+            Math.max(
+                18,
+                game.age +
+                Math.floor(Math.random() * 7) -
+                3
+            ),
+
+        status: "Friend"
+    };
+
+
+    game.relationships.push(person);
+
+    addLog(
+        `❤️ Met <b>${person.name}</b>.`
+    );
+
+    saveGame();
+
+    relationshipsPage();
+}
+
+
+function interact(index) {
+
+    const person =
+        game.relationships[index];
+
+
+    if (chance(0.72)) {
+
+        person.status =
+            "Close Friend";
+
+        game.happiness =
+            Math.min(
+                100,
+                game.happiness + 4
+            );
+
+        addLog(
+            `💬 You spent time with
+            ${person.name}.`
+        );
+
+    } else {
+
+        addLog(
+            `😬 Conversation with
+            ${person.name} went badly.`
+        );
+    }
+
+
+    saveGame();
+
+    relationshipsPage();
+}
+
+
+function datePerson(index) {
+
+    const person =
+        game.relationships[index];
+
+
+    if (chance(0.60)) {
+
+        person.status = "Partner";
+
+        addLog(
+            `❤️ You started dating
+            ${person.name}.`
+        );
+
+
+        if (chance(0.45)) {
+
+            game.married = true;
+
+            person.status = "Spouse";
+
+            addLog(
+                `💍 You married
+                ${person.name}!`
+            );
+        }
+
+    } else {
+
+        addLog(
+            `💔 ${person.name}
+            rejected you.`
+        );
+    }
+
+
+    saveGame();
+
+    relationshipsPage();
+}
+
+
+function haveChild() {
+
+    game.children++;
+
+    addLog(
+        "👶 You welcomed a child."
+    );
+
+    saveGame();
+
+    relationshipsPage();
+}
+
+
+/* =========================================================
+   EMIGRATION
+========================================================= */
+
+function emigrationPage() {
+
+    const countries = [
+
+        ["United States", "New York / California"],
+        ["United Kingdom", "London"],
+        ["Australia", "Sydney / Melbourne"],
+        ["Canada", "Toronto / Vancouver"],
+        ["Japan", "Tokyo"],
+        ["Hong Kong", "Hong Kong"],
+        ["Switzerland", "Zürich"]
+
+    ];
+
+
+    document.getElementById("main").innerHTML = `
+
+        <div class="hero">
+
+            <h2>
+                ✈️ Emigration
+            </h2>
+
+            <p>
+                Move overseas for education,
+                work or a new life.
+            </p>
+
+        </div>
+
+
+        <div class="choice">
+
+            ${
+                countries.map(
+                    (country,index) => `
+
+                        <button
+                            onclick="moveCountry(${index})"
+                        >
+
+                            <b>
+                                ${country[0]}
+                            </b>
+
+                            <br>
+
+                            ${country[1]}
+
+                        </button>
+                    `
+                ).join("")
+            }
+
+        </div>
+    `;
+}
+
+
+function moveCountry(index) {
+
+    const countries = [
+
+        "United States",
+        "United Kingdom",
+        "Australia",
+        "Canada",
+        "Japan",
+        "Hong Kong",
+        "Switzerland"
+
+    ];
+
+
+    const country = countries[index];
+
+
+    if (
+        !chance(
+            0.45 +
+            game.reputation / 250
+        )
+    ) {
+
+        addLog(
+            `❌ Your move to
+            ${country} was unsuccessful.`
+        );
+
+        emigrationPage();
+
+        return;
+    }
+
+
+    game.country = country;
+
+
+    addLog(
+        `✈️ You moved to
+        <b>${country}</b>.`
+    );
+
+
+    saveGame();
+
+    emigrationPage();
+}
+
+
+/* =========================================================
+   ATHLETE
+========================================================= */
+
+function athletePage() {
+
+    let html = `
+
+        <div class="hero">
+
+            <h2>
+                🏆 Athlete Mode
+            </h2>
+
+            <p>
+                Attempt to reach professional sport.
+            </p>
+
+        </div>
+
+
+        <div class="choice">
+
+            ${button(
+                "🏀 NBA",
+                "tryAthlete('NBA')"
+            )}
+
+            ${button(
+                "⚽ Premier League",
+                "tryAthlete('Premier League')"
+            )}
+
+        </div>
+    `;
+
+
+    if (game.athlete) {
+
+        html += `
+
+            <div class="success">
+
+                🏆 ${game.athlete}
+
+                <br>
+
+                ${game.athleteClub}
+
+                <br>
+
+                Annual salary:
+                ${money(game.athleteSalary)}
+
+            </div>
+        `;
+    }
+
+
+    document.getElementById("main").innerHTML = html;
+}
+
+
+function tryAthlete(type) {
+
+    if (game.age < 16) {
+
+        addLog(
+            "❌ Elite scouting starts at age 16."
+        );
+
+        athletePage();
+
+        return;
+    }
+
+
+    let fitness =
+        game.fitness;
+
+
+    if (
+        game.cca === "Football" &&
+        type === "Premier League"
+    ) {
+
+        fitness += 15;
+    }
+
+
+    const probability =
+        0.02 +
+        (fitness - 65) / 105;
+
+
+    if (!chance(probability)) {
+
+        addLog(
+            `❌ You were cut from the
+            ${type} pathway.`
+        );
+
+        athletePage();
+
+        return;
+    }
+
+
+    game.athlete = type;
+
+
+    if (type === "NBA") {
+
+        game.athleteClub =
+            "NBA / G League pathway";
+
+        game.athleteSalary =
+            150000;
+
+    } else {
+
+        game.athleteClub =
+            "Premier League Academy";
+
+        game.athleteSalary =
+            100000;
+    }
+
+
+    game.career =
+        "Professional Athlete";
+
+    game.company = type;
+
+    game.role =
+        game.athleteClub;
+
+    game.salary =
+        Math.round(
+            game.athleteSalary / 12
+        );
+
+
+    addLog(
+        `🏆 Scouted into the
+        <b>${type}</b> pathway!`
+    );
+
+
+    saveGame();
+
+    athletePage();
+}
+
+
+/* =========================================================
+   MEDIA
+========================================================= */
+
+function mediaPage() {
+
+    const mediaJobs =
+        JOBS
+        .map((job,index) => [job,index])
+        .filter(x => x[0][1] === "Media");
+
+
+    document.getElementById("main").innerHTML = `
+
+        <div class="hero">
+
+            <h2>
+                🎬 Media
+            </h2>
+
+            <p>
+                Journalism, broadcasting,
+                production and streaming.
+            </p>
+
+        </div>
+
+
+        <div class="choice">
+
+            ${
+                mediaJobs.map(
+                    item => `
+
+                        <button
+                            onclick="applyJob(${item[1]})"
+                        >
+
+                            <b>
+                                ${item[0][0]}
+                            </b>
+
+                            <br>
+
+                            ${item[0][3][0]}
+
+                            <br>
+
+                            <span class="small">
+                                ${money(item[0][2])}/month
+                            </span>
+
+                        </button>
+                    `
+                ).join("")
+            }
+
+        </div>
+    `;
+}
+
+
+/* =========================================================
+   SAF
+========================================================= */
+
+function safPage() {
+
+    document.getElementById("main").innerHTML = `
+
+        <div class="hero">
+
+            <h2>
+                🪖 Singapore Armed Forces
+            </h2>
+
+            <p>
+                Sign on as a Man, Specialist
+                or Officer and progress through ranks.
+            </p>
+
+        </div>
+
+
+        <div class="choice">
+
+            ${button(
+                "🪖 Man",
+                "signSAF('Man')"
+            )}
+
+            ${button(
+                "🎖️ Specialist",
+                "signSAF('Specialist')"
+            )}
+
+            ${button(
+                "⭐ Officer",
+                "signSAF('Officer')"
+            )}
+
+        </div>
+
+
+        ${
+            game.safType
+            ? `
+
+                <div class="success">
+
+                    🪖 ${game.safType}
+
+                    <br>
+
+                    Rank:
+                    <b>
+                        ${game.safRank}
+                    </b>
+
+                    <br>
+
+                    Years Served:
+                    ${game.safYears}
+
+                </div>
+
+              `
+            : ""
+        }
+    `;
+}
+
+
+function signSAF(type) {
+
+    if (game.age < 18) {
+
+        addLog(
+            "❌ You must be 18+ to sign on."
+        );
+
+        safPage();
+
+        return;
+    }
+
+
+    game.safType = type;
+
+    game.safRank =
+        SAF_RANKS[type][0];
+
+    game.safYears = 0;
+
+    game.career = "SAF";
+    game.company =
+        "Singapore Armed Forces";
+
+    game.role =
+        game.safRank;
+
+
+    if (type === "Officer")
+        game.salary = 5000;
+
+    else if (type === "Specialist")
+        game.salary = 3600;
+
+    else
+        game.salary = 2800;
+
+
+    game.nsCompleted = true;
+
+
+    addLog(
+        `🪖 Signed on as a
+        <b>${type}</b>.`
+    );
+
+
+    saveGame();
+
+    safPage();
+}
+
+
+/* =========================================================
+   POLITICS
+========================================================= */
+
+function politicsPage() {
+
+    document.getElementById("main").innerHTML = `
+
+        <div class="hero">
+
+            <h2>
+                🏛️ Politics
+            </h2>
+
+            <p>
+                Run for Parliament, enter Cabinet,
+                become Prime Minister or run for President.
+            </p>
+
+        </div>
+
+
+        <div class="card">
+
+            Party:
+            <b>
+                ${game.politicalParty || "None"}
+            </b>
+
+            <br>
+
+            Election wins:
+            ${game.electionWins}
+
+            <br>
+
+            MP:
+            ${game.mp ? "Yes" : "No"}
+
+            <br>
+
+            Cabinet:
+            ${game.cabinet ? "Yes" : "No"}
+
+            <br>
+
+            Prime Minister:
+            ${game.pm ? "Yes" : "No"}
+
+            <br>
+
+            President:
+            ${game.president ? "Yes" : "No"}
+
+            <br>
+
+            Reputation:
+            ${game.reputation}
+
+        </div>
+
+
+        <div class="choice">
+
+            ${button(
+                "🇸🇬 Join PAP",
+                "joinParty('PAP')"
+            )}
+
+            ${button(
+                "🔵 Join Workers' Party",
+                "joinParty('Workers Party')"
+            )}
+
+            ${button(
+                "⚪ Independent",
+                "joinParty('Independent')"
+            )}
+
+        </div>
+
+
+        ${
+            game.age >= 21
+            ? `
+
+                <div class="card">
+
+                    ${button(
+                        "🗳️ Contest Election",
+                        "contestElection()",
+                        "green"
+                    )}
+
+                    ${
+                        game.mp
+                        ? button(
+                            "🏛️ Seek Cabinet",
+                            "seekCabinet()",
+                            "blue"
+                        )
+                        : ""
+                    }
+
+                    ${
+                        game.cabinet
+                        ? button(
+                            "🇸🇬 Seek Prime Minister",
+                            "becomePrimeMinister()",
+                            "gold"
+                        )
+                        : ""
+                    }
+
+                    ${button(
+                        "🇸🇬 Run for President",
+                        "runForPresident()",
+                        "gold"
+                    )}
+
+                </div>
+
+              `
+            : ""
+        }
+    `;
+}
+
+
+function joinParty(party) {
+
+    game.politicalParty = party;
+
+    addLog(
+        `🏛️ Joined <b>${party}</b>.`
+    );
+
+    saveGame();
+
+    politicsPage();
+}
+
+
+function contestElection() {
+
+    if (!game.politicalParty) {
+
+        addLog(
+            "❌ Choose a party or Independent first."
+        );
+
+        politicsPage();
+
+        return;
+    }
+
+
+    const score =
+        game.charisma * 0.35 +
+        game.intelligence * 0.25 +
+        game.discipline * 0.20 +
+        game.reputation * 0.20;
+
+
+    const probability =
+        0.03 +
+        (score - 45) / 100;
+
+
+    if (!chance(probability)) {
+
+        addLog(
+            "🗳️ You lost the election."
+        );
+
+        game.reputation =
+            Math.max(
+                0,
+                game.reputation - 3
+            );
+
+        politicsPage();
+
+        return;
+    }
+
+
+    game.electionWins++;
+
+    game.mp = true;
+
+    game.career = "Politics";
+
+    game.company =
+        "Parliament of Singapore";
+
+    game.role =
+        "Member of Parliament";
+
+    game.salary = 14000;
+
+    game.reputation =
+        Math.min(
+            100,
+            game.reputation + 8
+        );
+
+
+    addLog(
+        "🗳️ <b>You won a parliamentary seat!</b>"
+    );
+
+
+    saveGame();
+
+    politicsPage();
+}
+
+
+function seekCabinet() {
+
+    if (!game.mp) {
+
+        addLog(
+            "❌ You need to be an MP."
+        );
+
+        politicsPage();
+
+        return;
+    }
+
+
+    if (chance(0.50)) {
+
+        game.cabinet = true;
+
+
+        const ministers = [
+
+            "Minister for Education",
+            "Minister for Finance",
+            "Minister for Health",
+            "Minister for Transport",
+            "Minister for National Development",
+            "Minister for Communications and Information"
+
+        ];
+
+
+        game.minister =
+            ministers[
+                Math.floor(
+                    Math.random() *
+                    ministers.length
+                )
+            ];
+
+
+        game.role =
+            "Cabinet Minister";
+
+        game.salary = 25000;
+
+
+        addLog(
+            `🏛️ Appointed
+            <b>${game.minister}</b>.`
+        );
+
+    } else {
+
+        addLog(
+            "❌ You were not selected for Cabinet."
+        );
+    }
+
+
+    saveGame();
+
+    politicsPage();
+}
+
+
+function becomePrimeMinister() {
+
+    if (!game.cabinet) {
+
+        addLog(
+            "❌ Cabinet membership is required."
+        );
+
+        politicsPage();
+
+        return;
+    }
+
+
+    if (chance(0.18)) {
+
+        game.pm = true;
+
+        game.role =
+            "Prime Minister";
+
+        game.salary = 30000;
+
+        game.reputation =
+            Math.min(
+                100,
+                game.reputation + 20
+            );
+
+
+        addLog(
+            "🇸🇬 <b>You became Prime Minister!</b>"
+        );
+
+    } else {
+
+        addLog(
+            "❌ Leadership bid failed."
+        );
+    }
+
+
+    saveGame();
+
+    politicsPage();
+}
+
+
+function runForPresident() {
+
+    if (
+        !game.mp &&
+        !game.cabinet &&
+        !game.pm
+    ) {
+
+        addLog(
+            "❌ You need substantial public service first."
+        );
+
+        politicsPage();
+
+        return;
+    }
+
+
+    const probability =
+        0.05 +
+        game.reputation / 250 +
+        game.charisma / 600 +
+        (game.pm ? 0.15 : 0);
+
+
+    if (chance(probability)) {
+
+        game.president = true;
+
+        game.role =
+            "President of Singapore";
+
+        game.company =
+            "The Istana";
+
+        game.salary = 46000;
+
+        game.reputation = 100;
+
+
+        addLog(
+            "🇸🇬 <b>You became President!</b>"
+        );
+
+    } else {
+
+        addLog(
+            "🗳️ Presidential campaign unsuccessful."
+        );
+    }
+
+
+    saveGame();
+
+    politicsPage();
+}
+
+
+/* =========================================================
+   LIFE LOG
+========================================================= */
+
+function logPage() {
+
+    document.getElementById("main").innerHTML = `
+
+        <div class="hero">
+
+            <h2>
+                📜 Life Log
+            </h2>
+
+        </div>
+
+
+        <div class="card log">
+
+            ${
+                game.logs.join("")
+            }
+
+        </div>
+    `;
+}
+
+
+/* =========================================================
+   AGE UP
+========================================================= */
+
+function ageUp() {
+
+    if (!game) {
+
+        alert(
+            "Start a life first."
+        );
+
+        return;
+    }
+
+
+    if (!game.alive) {
+
+        alert(
+            "This life has ended."
+        );
+
+        return;
+    }
+
+
+    if (game.age >= 100) {
+
+        game.alive = false;
+
+        addLog(
+            "⚰️ You died peacefully at age 100."
+        );
+
+        render();
+
+        return;
+    }
+
+
+    game.age++;
+
+
+    /* YEARLY SALARY */
+
+    if (game.salary > 0) {
+
+        const annualSalary =
+            game.salary * 12;
+
+        game.money += annualSalary;
+
+        addLog(
+            `💰 Annual salary paid:
+            <b>${money(annualSalary)}</b>.`
+        );
+    }
+
+
+    /* CAREER PROGRESSION */
+
+    if (
+        game.career &&
+        game.salary > 0
+    ) {
+
+        game.yearsInJob++;
+
+
+        if (
+            game.yearsInJob >= 2 &&
+            game.careerLevel < 4 &&
+            chance(0.62) &&
+            game.career !== "SAF" &&
+            game.career !== "Politics"
+        ) {
+
+            game.careerLevel++;
+
+            const job =
+                JOBS.find(
+                    x =>
+                    x[0] === game.company
+                );
+
+
+            if (job) {
+
+                game.role =
+                    job[3][
+                        game.careerLevel
+                    ];
+
+                game.salary =
+                    Math.round(
+                        game.salary * 1.20
+                    );
+
+
+                addLog(
+                    `📈 Promoted to
+                    <b>${game.role}</b>.`
+                );
+            }
+        }
+    }
+
+
+    /* SAF PROGRESSION */
+
+    if (game.safType) {
+
+        game.safYears++;
+
+
+        const ranks =
+            SAF_RANKS[
+                game.safType
+            ];
+
+
+        const current =
+            ranks.indexOf(
+                game.safRank
+            );
+
+
+        if (
+            current < ranks.length - 1 &&
+            chance(0.68)
+        ) {
+
+            game.safRank =
+                ranks[current + 1];
+
+            game.role =
+                game.safRank;
+
+            game.salary =
+                Math.round(
+                    game.salary * 1.16
+                );
+
+
+            addLog(
+                `🪖 Promoted to
+                <b>${game.safRank}</b>.`
+            );
+        }
+    }
+
+
+    /* NS */
+
+    if (
+        game.age === 18 &&
+        !game.safType &&
+        !game.nsCompleted
+    ) {
+
+        game.ns = true;
+
+        addLog(
+            "🪖 <b>National Service:</b>
+            you are liable for NS."
+        );
+    }
+
+
+    /* RESERVIST */
+
+    if (
+        game.age >= 20 &&
+        game.age <= 40 &&
+        game.age % 2 === 0 &&
+        !game.safType
+    ) {
+
+        game.reservist = true;
+
+        addLog(
+            "🪖 <b>Reservist cycle:</b>
+            mandatory training this year."
+        );
+    }
+
+
+    /* HEALTH */
+
+    if (game.age >= 40) {
+
+        game.health -=
+            Math.floor(
+                Math.random() * 3
+            );
+    }
+
+
+    if (game.age >= 60) {
+
+        game.health -=
+            Math.floor(
+                Math.random() * 4
+            );
+    }
+
+
+    /* RANDOM EVENTS */
+
+    randomEvent();
+
+
+    if (game.health <= 0) {
+
+        game.alive = false;
+
+        addLog(
+            "⚰️ Your health failed."
+        );
+    }
+
+
+    saveGame();
+
+    render();
+}
+
+
+function randomEvent() {
+
+    const r = Math.random();
+
+
+    if (r < 0.06) {
+
+        game.happiness =
+            Math.min(
+                100,
+                game.happiness + 8
+            );
+
+        addLog(
+            "🎉 You had an excellent year."
+        );
+
+    }
+
+
+    else if (r < 0.11) {
+
+        game.money =
+            Math.max(
+                0,
+                game.money - 5000
+            );
+
+        addLog(
+            "💸 Unexpected expenses cost you $5,000."
+        );
+
+    }
+
+
+    else if (r < 0.16) {
+
+        game.intelligence =
+            Math.min(
+                100,
+                game.intelligence + 2
+            );
+
+        addLog(
+            "📚 You gained useful knowledge."
+        );
+
+    }
+
+
+    else if (r < 0.20) {
+
+        game.health =
+            Math.max(
+                1,
+                game.health - 5
+            );
+
+        addLog(
+            "🤒 You had a difficult health year."
+        );
+    }
+}
+
+
+/* =========================================================
+   RENDER
+========================================================= */
+
+function render() {
+
+    if (!game) {
+
+        document.getElementById("stats").innerHTML = "";
+
+        document.getElementById("nav").innerHTML = "";
+
+        document.getElementById("main").innerHTML = `
+
+            <div class="hero">
+
+                <h2>
+                    🇸🇬 Singapore Life Simulator
+                </h2>
+
+                <p>
+                    Create a new Singaporean life
+                    or continue your saved game.
+                </p>
+
+                ${button(
+                    "👶 Start New Life",
+                    "startGame()",
+                    "primary"
+                )}
+
+                ${
+                    localStorage.getItem(
+                        "SG_LIFE_V15_1"
+                    )
+                    ? button(
+                        "📂 Continue Saved Life",
+                        "loadGame()",
+                        "blue"
+                    )
+                    : ""
+                }
+
+            </div>
+        `;
+
+        return;
+    }
+
+
+    renderStats();
+
+    renderNav();
+
+    homePage();
+}
+
+
+/* =========================================================
+   START
+========================================================= */
+
+render();
+
+</script>
+
+</body>
+</html>
