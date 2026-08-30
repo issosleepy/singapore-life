@@ -1,4194 +1,934 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Singapore Life Simulator V15.1</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>THE AMERICAN DREAM - Life & Career Simulator</title>
+    <style>
+        :root {
+            --bg-dark: #0f1115;
+            --bg-card: #181b21;
+            --bg-card-hover: #22262f;
+            --border-color: #2a2e39;
+            --text-main: #f0f2f5;
+            --text-muted: #8c93a0;
+            --accent-red: #e63946;
+            --accent-green: #2a9d8f;
+            --accent-blue: #457b9d;
+            --accent-gold: #e9c46a;
+            --font-stack: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
 
-<style>
-* {
-    box-sizing: border-box;
-}
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            font-family: var(--font-stack);
+            line-height: 1.5;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
 
-body {
-    margin: 0;
-    background: #07111f;
-    color: #f8fafc;
-    font-family: Arial, Helvetica, sans-serif;
-}
+        /* Top Navigation Bar */
+        header {
+            background: #14171d;
+            border-bottom: 1px solid var(--border-color);
+            padding: 12px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 64px;
+        }
+        .logo { font-weight: 800; letter-spacing: 2px; font-size: 1.1rem; color: #fff; }
+        .logo span { color: var(--accent-red); }
+        .top-stats { display: flex; gap: 24px; font-size: 0.9rem; }
+        .stat-badge { display: flex; flex-direction: column; }
+        .stat-label { font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; }
+        .stat-value { font-weight: 700; color: #fff; }
 
-button {
-    border: 0;
-    border-radius: 10px;
-    padding: 11px 14px;
-    margin: 4px;
-    background: #263449;
-    color: white;
-    cursor: pointer;
-    font-weight: bold;
-}
+        /* Main Game Layout */
+        .app-container {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
 
-button:hover {
-    background: #3b4d66;
-}
+        /* Sidebar Navigation */
+        nav {
+            width: 220px;
+            background: #14171d;
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            padding: 16px 0;
+        }
+        .nav-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            padding: 12px 24px;
+            text-align: left;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .nav-btn:hover { color: #fff; background: rgba(255,255,255,0.03); }
+        .nav-btn.active { color: #fff; background: rgba(230, 57, 70, 0.12); border-left: 3px solid var(--accent-red); }
 
-.primary {
-    background: #c51f2b !important;
-}
+        /* Main Workspace */
+        main {
+            flex: 1;
+            padding: 24px;
+            overflow-y: auto;
+            background: var(--bg-dark);
+        }
 
-.green {
-    background: #15803d !important;
-}
+        /* Right Panel - Timeline Feed */
+        aside {
+            width: 320px;
+            background: #14171d;
+            border-left: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            padding: 16px;
+        }
+        .timeline-header { font-size: 0.85rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; }
+        .timeline-logs { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; padding-right: 4px; }
+        .log-entry { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 6px; padding: 10px 12px; font-size: 0.85rem; }
+        .log-age { font-weight: 700; color: var(--accent-red); margin-bottom: 2px; }
 
-.blue {
-    background: #2563eb !important;
-}
+        /* Footer Control Bar */
+        footer {
+            background: #14171d;
+            border-top: 1px solid var(--border-color);
+            padding: 12px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 64px;
+        }
+        .btn-age {
+            background: var(--accent-red);
+            color: #fff;
+            border: none;
+            padding: 12px 32px;
+            font-weight: 800;
+            font-size: 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            letter-spacing: 1px;
+            transition: transform 0.1s, background 0.2s;
+        }
+        .btn-age:hover { background: #d62839; transform: translateY(-1px); }
+        .btn-secondary {
+            background: var(--bg-card);
+            color: var(--text-main);
+            border: 1px solid var(--border-color);
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.85rem;
+        }
+        .btn-secondary:hover { background: var(--bg-card-hover); }
 
-.gold {
-    background: #a16207 !important;
-}
+        /* Card Component System */
+        .card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-bottom: 24px; }
+        .card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; padding: 20px; }
+        .card-title { font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; font-weight: 700; }
+        .card-value { font-size: 1.5rem; font-weight: 800; color: #fff; }
+        .card-desc { font-size: 0.85rem; color: var(--text-muted); margin-top: 4px; }
 
-.danger {
-    background: #991b1b !important;
-}
+        /* Progress Bars */
+        .meter { height: 8px; background: #262a34; border-radius: 4px; overflow: hidden; margin-top: 8px; }
+        .meter-fill { height: 100%; background: var(--accent-green); transition: width 0.3s; }
 
-#app {
-    max-width: 1250px;
-    margin: auto;
-    padding: 18px;
-}
+        /* Tables */
+        .data-table { width: 100%; border-collapse: collapse; margin-top: 12px; }
+        .data-table th, .data-table td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--border-color); font-size: 0.85rem; }
+        .data-table th { color: var(--text-muted); font-weight: 600; text-transform: uppercase; font-size: 0.75rem; }
 
-header {
-    background: linear-gradient(135deg, #c51f2b, #7f1d1d);
-    padding: 22px;
-    border-radius: 18px;
-    margin-bottom: 14px;
-}
+        /* Modals */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.75); display: flex; justify-content: center; align-items: center; z-index: 1000; }
+        .modal { background: var(--bg-card); border: 1px solid var(--border-color); width: 90%; max-width: 580px; border-radius: 8px; padding: 24px; max-height: 90vh; overflow-y: auto; }
+        .modal-title { font-size: 1.3rem; font-weight: 800; margin-bottom: 12px; color: #fff; }
+        .modal-body { font-size: 0.95rem; color: #d0d4dc; margin-bottom: 20px; line-height: 1.6; }
+        .modal-actions { display: flex; flex-direction: column; gap: 10px; }
+        .option-btn { background: #222630; border: 1px solid var(--border-color); color: #fff; padding: 12px 16px; border-radius: 6px; text-align: left; cursor: pointer; transition: all 0.2s; font-size: 0.9rem; }
+        .option-btn:hover { background: #2d3240; border-color: var(--accent-blue); }
 
-header h1 {
-    margin: 0;
-}
+        /* Form elements for setup */
+        .form-group { margin-bottom: 16px; }
+        .form-label { display: block; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); margin-bottom: 6px; }
+        .form-input, .form-select { width: 100%; padding: 10px; background: #111318; border: 1px solid var(--border-color); border-radius: 4px; color: #fff; font-size: 0.9rem; }
 
-header p {
-    margin-bottom: 0;
-    color: #fee2e2;
-}
-
-.stats {
-    display: grid;
-    grid-template-columns: repeat(8, 1fr);
-    gap: 7px;
-    margin-bottom: 12px;
-}
-
-.stat {
-    background: #172235;
-    border-radius: 10px;
-    padding: 9px;
-    text-align: center;
-}
-
-.stat b {
-    display: block;
-    font-size: 17px;
-    margin-top: 4px;
-}
-
-.layout {
-    display: grid;
-    grid-template-columns: 220px 1fr;
-    gap: 14px;
-}
-
-nav,
-main {
-    background: #111b2c;
-    border-radius: 16px;
-    padding: 14px;
-}
-
-nav {
-    height: max-content;
-}
-
-nav button {
-    width: 100%;
-    text-align: left;
-    background: transparent;
-    margin: 2px 0;
-}
-
-main {
-    min-height: 650px;
-}
-
-.hero {
-    background: linear-gradient(135deg, #1e293b, #172554);
-    padding: 17px;
-    border-radius: 14px;
-    margin-bottom: 12px;
-}
-
-.hero h2 {
-    margin-top: 0;
-}
-
-.card {
-    background: #172235;
-    border-radius: 13px;
-    padding: 14px;
-    margin: 9px 0;
-}
-
-.choice {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 7px;
-}
-
-.choice button {
-    text-align: left;
-    min-height: 65px;
-}
-
-.small {
-    font-size: 12px;
-    color: #aab5c5;
-}
-
-.money {
-    color: #86efac;
-}
-
-.success {
-    background: #052e16;
-    border: 1px solid #166534;
-    padding: 12px;
-    border-radius: 11px;
-}
-
-.warning {
-    background: #422006;
-    border: 1px solid #92400e;
-    padding: 12px;
-    border-radius: 11px;
-}
-
-.log {
-    max-height: 430px;
-    overflow-y: auto;
-}
-
-.log div {
-    padding: 8px 0;
-    border-bottom: 1px solid #ffffff12;
-}
-
-hr {
-    border: 0;
-    border-top: 1px solid #ffffff12;
-    margin: 10px 0;
-}
-
-.badge {
-    display: inline-block;
-    background: #263449;
-    padding: 4px 8px;
-    border-radius: 20px;
-    margin: 2px;
-    font-size: 12px;
-}
-
-footer {
-    text-align: center;
-    color: #64748b;
-    padding: 15px;
-}
-
-@media(max-width:900px) {
-    .layout {
-        grid-template-columns: 1fr;
-    }
-
-    .stats {
-        grid-template-columns: repeat(4, 1fr);
-    }
-
-    nav {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-    }
-}
-
-@media(max-width:550px) {
-    .stats {
-        grid-template-columns: repeat(2, 1fr);
-    }
-}
-</style>
+        .hidden { display: none !important; }
+        .text-green { color: var(--accent-green); }
+        .text-red { color: var(--accent-red); }
+        .text-gold { color: var(--accent-gold); }
+    </style>
 </head>
-
 <body>
 
-<div id="app">
-
-<header>
-    <h1>🇸🇬 Singapore Life Simulator V15.1</h1>
-    <p>
-        Education • Careers • Money • Relationships • SAF • Sport • Media • Politics
-    </p>
-</header>
-
-<div class="stats" id="stats"></div>
-
-<div class="layout">
-
-<nav id="nav"></nav>
-
-<main id="main"></main>
-
-</div>
-
-<footer>
-    Singapore Life Simulator • V15.1
-</footer>
-
-</div>
-
-<script>
-
-/* =========================================================
-   DATA
-========================================================= */
-
-const PRIMARY_SCHOOLS = [
-    ["Raffles Girls' Primary School", 94],
-    ["Nanyang Primary School", 92],
-    ["Tao Nan School", 88],
-    ["Anglo-Chinese School (Primary)", 90]
-];
-
-const SECONDARY_SCHOOLS = [
-    ["Raffles Institution", 97],
-    ["Hwa Chong Institution", 96],
-    ["Nanyang Girls' High School", 95],
-    ["Anglo-Chinese School (Independent)", 94]
-];
-
-const POST_SECONDARY = [
-
-    ["Raffles Institution", "JC", 96],
-    ["Hwa Chong Institution", "JC", 95],
-    ["Victoria Junior College", "JC", 92],
-    ["National Junior College", "JC", 93],
-
-    ["Nanyang Polytechnic", "Poly", 84],
-    ["Singapore Polytechnic", "Poly", 85],
-    ["Ngee Ann Polytechnic", "Poly", 86],
-    ["Temasek Polytechnic", "Poly", 85],
-    ["Republic Polytechnic", "Poly", 82],
-
-    ["ITE College Central", "ITE", 70],
-    ["ITE College East", "ITE", 70],
-    ["ITE College West", "ITE", 70]
-];
-
-const CCAS = [
-    ["National Cadet Corps (NCC)", "discipline", "fitness"],
-    ["Football", "fitness", "discipline"],
-    ["Modern Dance", "fitness", "charisma"],
-    ["Media Club", "charisma", "intelligence"]
-];
-
-const UNIVERSITIES = [
-
-    ["National University of Singapore", "Singapore", 88],
-    ["Nanyang Technological University", "Singapore", 85],
-    ["Singapore Management University", "Singapore", 82],
-    ["Singapore University of Technology and Design", "Singapore", 82],
-    ["Singapore University of Social Sciences", "Singapore", 75],
-    ["Singapore Institute of Technology", "Singapore", 75],
-
-    ["Harvard University", "United States", 99],
-    ["Yale University", "United States", 98],
-    ["MIT", "United States", 99],
-    ["Stanford University", "United States", 99],
-    ["Princeton University", "United States", 99],
-    ["University of Chicago", "United States", 97],
-    ["UC Berkeley", "United States", 96],
-
-    ["University of Oxford", "United Kingdom", 98],
-    ["University of Cambridge", "United Kingdom", 98],
-    ["Imperial College London", "United Kingdom", 96],
-    ["London School of Economics", "United Kingdom", 96],
-
-    ["University of Melbourne", "Australia", 93],
-    ["Australian National University", "Australia", 92],
-    ["University of Sydney", "Australia", 91],
-
-    ["University of Toronto", "Canada", 94],
-    ["University of British Columbia", "Canada", 91],
-
-    ["University of Hong Kong", "Hong Kong", 91],
-    ["University of Tokyo", "Japan", 94],
-    ["ETH Zürich", "Switzerland", 97],
-    ["EPFL", "Switzerland", 95],
-    ["Seoul National University", "South Korea", 93],
-    ["Tsinghua University", "China", 97],
-    ["Peking University", "China", 97],
-    ["University of Amsterdam", "Netherlands", 92]
-];
-
-const COURSES = [
-    "Computer Science",
-    "Business",
-    "Finance",
-    "Economics",
-    "Law",
-    "Medicine",
-    "Engineering",
-    "Political Science",
-    "Communications",
-    "Media Studies",
-    "Psychology",
-    "Biological Sciences",
-    "Mathematics",
-    "Architecture"
-];
-
-const JOBS = [
-
-    [
-        "Google",
-        "Technology",
-        8500,
-        [
-            "Software Engineer",
-            "Senior Software Engineer",
-            "Staff Engineer",
-            "Engineering Manager",
-            "Director of Engineering"
-        ],
-        78
-    ],
-
-    [
-        "Microsoft",
-        "Technology",
-        8200,
-        [
-            "Software Engineer",
-            "Senior Engineer",
-            "Principal Engineer",
-            "Engineering Manager",
-            "Director"
-        ],
-        77
-    ],
-
-    [
-        "Grab",
-        "Technology",
-        7000,
-        [
-            "Software Engineer",
-            "Senior Engineer",
-            "Tech Lead",
-            "Engineering Manager",
-            "Director"
-        ],
-        73
-    ],
-
-    [
-        "Shopee",
-        "Technology",
-        6500,
-        [
-            "Associate",
-            "Senior Associate",
-            "Manager",
-            "Senior Manager",
-            "Director"
-        ],
-        72
-    ],
-
-    [
-        "Sea Group",
-        "Technology",
-        7000,
-        [
-            "Associate",
-            "Senior Associate",
-            "Manager",
-            "Director",
-            "Vice President"
-        ],
-        74
-    ],
-
-    [
-        "DBS",
-        "Banking",
-        6200,
-        [
-            "Analyst",
-            "Associate",
-            "Vice President",
-            "Director",
-            "Managing Director"
-        ],
-        73
-    ],
-
-    [
-        "OCBC",
-        "Banking",
-        6000,
-        [
-            "Analyst",
-            "Associate",
-            "Vice President",
-            "Director",
-            "Managing Director"
-        ],
-        72
-    ],
-
-    [
-        "JPMorgan Chase",
-        "Finance",
-        8500,
-        [
-            "Analyst",
-            "Associate",
-            "Vice President",
-            "Executive Director",
-            "Managing Director"
-        ],
-        80
-    ],
-
-    [
-        "Goldman Sachs",
-        "Finance",
-        9000,
-        [
-            "Analyst",
-            "Associate",
-            "Vice President",
-            "Executive Director",
-            "Managing Director"
-        ],
-        82
-    ],
-
-    [
-        "Deloitte",
-        "Consulting",
-        6000,
-        [
-            "Analyst",
-            "Consultant",
-            "Senior Consultant",
-            "Manager",
-            "Partner"
-        ],
-        70
-    ],
-
-    [
-        "PwC",
-        "Consulting",
-        6000,
-        [
-            "Associate",
-            "Senior Associate",
-            "Manager",
-            "Director",
-            "Partner"
-        ],
-        70
-    ],
-
-    [
-        "Rajah & Tann",
-        "Law",
-        6500,
-        [
-            "Associate",
-            "Senior Associate",
-            "Partner",
-            "Senior Partner",
-            "Managing Partner"
-        ],
-        79
-    ],
-
-    [
-        "Allen & Gledhill",
-        "Law",
-        6800,
-        [
-            "Associate",
-            "Senior Associate",
-            "Partner",
-            "Senior Partner",
-            "Managing Partner"
-        ],
-        81
-    ],
-
-    [
-        "Mediacorp",
-        "Media",
-        4200,
-        [
-            "Production Assistant",
-            "Producer",
-            "Senior Producer",
-            "Executive Producer",
-            "Head of Production"
-        ],
-        65
-    ],
-
-    [
-        "CNA",
-        "Media",
-        4300,
-        [
-            "Reporter",
-            "Correspondent",
-            "Senior Correspondent",
-            "Producer",
-            "Editor"
-        ],
-        68
-    ],
-
-    [
-        "SPH Media",
-        "Media",
-        4000,
-        [
-            "Reporter",
-            "Journalist",
-            "Senior Journalist",
-            "Editor",
-            "Senior Editor"
-        ],
-        65
-    ],
-
-    [
-        "The Straits Times",
-        "Media",
-        4100,
-        [
-            "Reporter",
-            "Journalist",
-            "Senior Journalist",
-            "Deputy Editor",
-            "Editor"
-        ],
-        67
-    ],
-
-    [
-        "Netflix",
-        "Media",
-        6000,
-        [
-            "Content Coordinator",
-            "Content Associate",
-            "Producer",
-            "Senior Producer",
-            "Director"
-        ],
-        74
-    ],
-
-    [
-        "Singapore Airlines",
-        "Aviation",
-        5200,
-        [
-            "Executive",
-            "Senior Executive",
-            "Manager",
-            "Senior Manager",
-            "Director"
-        ],
-        68
-    ],
-
-    [
-        "Changi Airport Group",
-        "Aviation",
-        5000,
-        [
-            "Executive",
-            "Manager",
-            "Senior Manager",
-            "Director",
-            "Executive Director"
-        ],
-        67
-    ],
-
-    [
-        "Pfizer",
-        "Pharma",
-        6200,
-        [
-            "Associate",
-            "Senior Associate",
-            "Manager",
-            "Director",
-            "Head"
-        ],
-        75
-    ],
-
-    [
-        "Roche",
-        "Pharma",
-        6500,
-        [
-            "Associate",
-            "Senior Associate",
-            "Manager",
-            "Director",
-            "Head"
-        ],
-        77
-    ],
-
-    [
-        "Singapore General Hospital",
-        "Medicine",
-        7000,
-        [
-            "Resident Doctor",
-            "Registrar",
-            "Associate Consultant",
-            "Consultant",
-            "Senior Consultant"
-        ],
-        88
-    ],
-
-    [
-        "National University Hospital",
-        "Medicine",
-        7000,
-        [
-            "Resident Doctor",
-            "Registrar",
-            "Associate Consultant",
-            "Consultant",
-            "Senior Consultant"
-        ],
-        88
-    ],
-
-    [
-        "KK Women's and Children's Hospital",
-        "Medicine",
-        6800,
-        [
-            "Resident Doctor",
-            "Registrar",
-            "Associate Consultant",
-            "Consultant",
-            "Senior Consultant"
-        ],
-        87
-    ],
-
-    [
-        "Tan Tock Seng Hospital",
-        "Medicine",
-        6800,
-        [
-            "Resident Doctor",
-            "Registrar",
-            "Associate Consultant",
-            "Consultant",
-            "Senior Consultant"
-        ],
-        87
-    ],
-
-    [
-        "Ministry of Health",
-        "Government",
-        6500,
-        [
-            "Officer",
-            "Senior Officer",
-            "Assistant Director",
-            "Deputy Director",
-            "Director"
-        ],
-        76
-    ],
-
-    [
-        "Ministry of Education",
-        "Government",
-        6200,
-        [
-            "Education Officer",
-            "Senior Officer",
-            "Subject Head",
-            "Vice Principal",
-            "Principal"
-        ],
-        73
-    ],
-
-    [
-        "Ministry of Finance",
-        "Government",
-        6800,
-        [
-            "Executive",
-            "Senior Executive",
-            "Assistant Director",
-            "Deputy Director",
-            "Director"
-        ],
-        78
-    ]
-];
-
-const CARS = [
-    ["Used Toyota Corolla", 28000],
-    ["Honda Civic", 48000],
-    ["Toyota Camry", 65000],
-    ["Mazda CX-5", 72000],
-    ["Tesla Model 3", 90000],
-    ["BMW 3 Series", 155000],
-    ["Mercedes-Benz C-Class", 175000],
-    ["Porsche 718 Cayman", 300000],
-    ["Porsche 911", 520000],
-    ["Lamborghini Huracán", 850000]
-];
-
-const HOUSES = [
-    ["3-room HDB flat", 350000],
-    ["4-room HDB flat", 520000],
-    ["5-room HDB flat", 700000],
-    ["Executive Condominium", 1100000],
-    ["City-fringe condominium", 1800000],
-    ["Luxury Bukit Timah condominium", 3500000],
-    ["Good Class Bungalow", 12000000]
-];
-
-const SAF_RANKS = {
-
-    Man: [
-        "Private",
-        "Lance Corporal",
-        "Corporal",
-        "3rd Sergeant",
-        "Staff Sergeant",
-        "Warrant Officer"
-    ],
-
-    Specialist: [
-        "3rd Sergeant",
-        "2nd Sergeant",
-        "1st Sergeant",
-        "Staff Sergeant",
-        "Master Sergeant"
-    ],
-
-    Officer: [
-        "Officer Cadet",
-        "2nd Lieutenant",
-        "Lieutenant",
-        "Captain",
-        "Major",
-        "Lieutenant Colonel",
-        "Colonel"
-    ]
-};
-
-const ACTIVITIES = {
-
-    child: [
-        ["🧸 Play", "happiness", 5],
-        ["📚 Picture Books", "intelligence", 2],
-        ["🏃 Play Outside", "fitness", 4],
-        ["👨‍👩‍👧 Family Time", "happiness", 5]
-    ],
-
-    school: [
-        ["📚 Study", "intelligence", 3],
-        ["🏋️ Training", "fitness", 3],
-        ["👥 Hang Out", "charisma", 2],
-        ["🎮 Gaming", "happiness", 3],
-        ["🎨 Creative Project", "charisma", 2]
-    ],
-
-    teen: [
-        ["📚 Study Hard", "intelligence", 4],
-        ["🏋️ Gym", "fitness", 4],
-        ["🎬 Make Content", "charisma", 3],
-        ["🍜 Eat Out", "happiness", 5],
-        ["🧑‍🤝‍🧑 Socialise", "charisma", 3]
-    ],
-
-    adult: [
-        ["📚 Professional Course", "intelligence", 3],
-        ["🏋️ Gym", "fitness", 3],
-        ["✈️ Holiday", "happiness", 10],
-        ["🍜 Restaurant", "happiness", 6],
-        ["🤝 Volunteer", "reputation", 3],
-        ["🎮 Gaming", "happiness", 4]
-    ],
-
-    retired: [
-        ["🌴 Holiday", "happiness", 10],
-        ["🏋️ Exercise", "fitness", 3],
-        ["📖 Read", "intelligence", 2],
-        ["👨‍👩‍👧 Family Time", "happiness", 6],
-        ["🤝 Volunteer", "reputation", 3]
-    ]
-};
-
-
-/* =========================================================
-   BASE PLAYER
-========================================================= */
-
-const BASE_PLAYER = {
-
-    age: 0,
-
-    money: 0,
-
-    intelligence: 65,
-    health: 85,
-    happiness: 70,
-    charisma: 60,
-    discipline: 60,
-    fitness: 65,
-    reputation: 20,
-
-    family: "",
-    parentsIncome: 0,
-
-    stage: "Baby",
-
-    school: "",
-    schoolType: "",
-
-    cca: "",
-    ccaLevel: 0,
-
-    postSecondary: "",
-
-    university: "",
-    universityCountry: "",
-    course: "",
-    degree: "",
-
-    degrees: [],
-    postgraduate: [],
-
-    country: "Singapore",
-
-    career: "",
-    company: "",
-    role: "",
-    careerLevel: 0,
-    salary: 0,
-    yearsInJob: 0,
-
-    ns: false,
-    nsCompleted: false,
-    reservist: false,
-
-    safType: "",
-    safRank: "",
-    safYears: 0,
-
-    relationships: [],
-    married: false,
-    children: 0,
-
-    cars: [],
-    houses: [],
-    investments: 0,
-
-    athlete: "",
-    athleteClub: "",
-    athleteSalary: 0,
-
-    politicalParty: "",
-    mp: false,
-    cabinet: false,
-    minister: "",
-    pm: false,
-    president: false,
-    electionWins: 0,
-
-    logs: [],
-
-    alive: true
-};
-
-
-/* =========================================================
-   HELPERS
-========================================================= */
-
-let game = null;
-
-function clone(obj) {
-    return JSON.parse(JSON.stringify(obj));
-}
-
-function money(n) {
-    return "$" + Math.round(n || 0).toLocaleString();
-}
-
-function chance(probability) {
-    return Math.random() < Math.max(0, Math.min(1, probability));
-}
-
-function addLog(text) {
-
-    game.logs.unshift(
-        `<div>
-            <span class="small">Age ${game.age}</span>
-            — ${text}
-        </div>`
-    );
-
-    game.logs = game.logs.slice(0, 150);
-}
-
-function saveGame() {
-
-    if (!game) return;
-
-    localStorage.setItem(
-        "SG_LIFE_V15_1",
-        JSON.stringify(game)
-    );
-}
-
-function loadGame() {
-
-    const saved = localStorage.getItem("SG_LIFE_V15_1");
-
-    if (!saved) {
-        alert("No saved game found.");
-        return;
-    }
-
-    game = JSON.parse(saved);
-
-    render();
-}
-
-function button(text, action, cls = "") {
-
-    return `<button class="${cls}" onclick="${action}">
-        ${text}
-    </button>`;
-}
-
-
-/* =========================================================
-   START
-========================================================= */
-
-function startGame() {
-
-    game = clone(BASE_PLAYER);
-
-    const r = Math.random();
-
-    if (r < 0.20) {
-
-        game.family = "Poor";
-        game.parentsIncome = 2200;
-        game.money = 300;
-
-    } else if (r < 0.75) {
-
-        game.family = "Middle Class";
-        game.parentsIncome = 6500;
-        game.money = 2500;
-
-    } else if (r < 0.95) {
-
-        game.family = "Upper Middle Class";
-        game.parentsIncome = 15000;
-        game.money = 25000;
-
-    } else {
-
-        game.family = "Rich";
-        game.parentsIncome = 50000;
-        game.money = 250000;
-    }
-
-    game.intelligence =
-        Math.floor(Math.random() * 31) + 55;
-
-    game.charisma =
-        Math.floor(Math.random() * 31) + 50;
-
-    game.discipline =
-        Math.floor(Math.random() * 31) + 50;
-
-    game.fitness =
-        Math.floor(Math.random() * 31) + 50;
-
-    addLog(
-        `You were born into a <b>${game.family}</b> family.`
-    );
-
-    saveGame();
-
-    render();
-}
-
-
-/* =========================================================
-   NAVIGATION
-========================================================= */
-
-function renderStats() {
-
-    if (!game) return;
-
-    document.getElementById("stats").innerHTML = `
-
-        <div class="stat">
-            <span class="small">Age</span>
-            <b>${game.age}</b>
+    <!-- Top Bar -->
+    <header>
+        <div class="logo">AMERICAN<span>DREAM</span></div>
+        <div class="top-stats">
+            <div class="stat-badge"><span class="stat-label">Name</span><span class="stat-value" id="top-name">---</span></div>
+            <div class="stat-badge"><span class="stat-label">Age</span><span class="stat-value" id="top-age">0</span></div>
+            <div class="stat-badge"><span class="stat-label">Location</span><span class="stat-value" id="top-location">---</span></div>
+            <div class="stat-badge"><span class="stat-label">Occupation</span><span class="stat-value" id="top-occupation">Unemployed</span></div>
+            <div class="stat-badge"><span class="stat-label">Cash</span><span class="stat-value text-green" id="top-cash">$0</span></div>
+            <div class="stat-badge"><span class="stat-label">Net Worth</span><span class="stat-value text-gold" id="top-networth">$0</span></div>
         </div>
+    </header>
 
-        <div class="stat">
-            <span class="small">Cash</span>
-            <b>${money(game.money)}</b>
-        </div>
+    <!-- Main Workspace -->
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <nav>
+            <button class="nav-btn active" onclick="switchTab('dashboard')"> Dashboard</button>
+            <button class="nav-btn" onclick="switchTab('education')"> Education</button>
+            <button class="nav-btn" onclick="switchTab('career')"> Career & Business</button>
+            <button class="nav-btn" onclick="switchTab('finance')"> Investments</button>
+            <button class="nav-btn" onclick="switchTab('realestate')"> Real Estate</button>
+            <button class="nav-btn" onclick="switchTab('relationships')"> Family & Social</button>
+            <button class="nav-btn" onclick="switchTab('relocate')"> Relocate</button>
+        </nav>
 
-        <div class="stat">
-            <span class="small">Intelligence</span>
-            <b>${game.intelligence}</b>
-        </div>
+        <!-- Main Content Area -->
+        <main id="main-content">
+            <!-- Dynamic Content Injected Here -->
+        </main>
 
-        <div class="stat">
-            <span class="small">Health</span>
-            <b>${game.health}</b>
-        </div>
-
-        <div class="stat">
-            <span class="small">Happiness</span>
-            <b>${game.happiness}</b>
-        </div>
-
-        <div class="stat">
-            <span class="small">Charisma</span>
-            <b>${game.charisma}</b>
-        </div>
-
-        <div class="stat">
-            <span class="small">Discipline</span>
-            <b>${game.discipline}</b>
-        </div>
-
-        <div class="stat">
-            <span class="small">Fitness</span>
-            <b>${game.fitness}</b>
-        </div>
-    `;
-}
-
-function renderNav() {
-
-    document.getElementById("nav").innerHTML =
-
-        button("🏠 Life", "showPage('home')") +
-
-        button("🎓 Education", "showPage('education')") +
-
-        button("🎯 Activities", "showPage('activity')") +
-
-        button("💼 Career", "showPage('career')") +
-
-        button("💰 Money & Assets", "showPage('money')") +
-
-        button("❤️ Relationships", "showPage('relationships')") +
-
-        button("✈️ Emigration", "showPage('emigration')") +
-
-        button("🏆 Athlete Mode", "showPage('athlete')") +
-
-        button("🎬 Media", "showPage('media')") +
-
-        button("🪖 SAF", "showPage('saf')") +
-
-        button("🏛️ Politics", "showPage('politics')") +
-
-        button("📜 Life Log", "showPage('log')") +
-
-        "<hr>" +
-
-        button("⏩ AGE UP", "ageUp()", "primary") +
-
-        button("💾 SAVE", "saveGame();alert('Game saved!')");
-
-}
-
-function showPage(page) {
-
-    const pages = {
-
-        home: homePage,
-        education: educationPage,
-        activity: activityPage,
-        career: careerPage,
-        money: moneyPage,
-        relationships: relationshipsPage,
-        emigration: emigrationPage,
-        athlete: athletePage,
-        media: mediaPage,
-        saf: safPage,
-        politics: politicsPage,
-        log: logPage
-    };
-
-    if (pages[page]) {
-        pages[page]();
-    }
-}
-
-
-/* =========================================================
-   HOME
-========================================================= */
-
-function homePage() {
-
-    document.getElementById("main").innerHTML = `
-
-        <div class="hero">
-
-            <h2>
-                ${game.age === 0
-                    ? "👶 Your Life Begins"
-                    : "🇸🇬 Your Life"}
-            </h2>
-
-            <p>
-                <b>Family:</b>
-                ${game.family}
-            </p>
-
-            <p>
-                <b>Stage:</b>
-                ${game.stage}
-            </p>
-
-            <p>
-                <b>Country:</b>
-                ${game.country}
-            </p>
-
-            <p>
-                <b>Education:</b>
-                ${game.university ||
-                  game.school ||
-                  "Not started"}
-            </p>
-
-            <p>
-                <b>Career:</b>
-                ${
-                    game.role
-                    ? `${game.role} @ ${game.company}`
-                    : "None"
-                }
-            </p>
-
-        </div>
-
-
-        <div class="card">
-
-            <h3>Quick Actions</h3>
-
-            ${button(
-                "🎯 Activities",
-                "showPage('activity')"
-            )}
-
-            ${game.age >= 6
-                ? button(
-                    "🎓 Education",
-                    "showPage('education')",
-                    "blue"
-                )
-                : ""
-            }
-
-            ${game.age >= 18
-                ? button(
-                    "💼 Career",
-                    "showPage('career')",
-                    "green"
-                )
-                : ""
-            }
-
-            ${game.age >= 18
-                ? button(
-                    "❤️ Relationships",
-                    "showPage('relationships')"
-                )
-                : ""
-            }
-
-        </div>
-
-
-        <div class="card">
-
-            <h3>Recent Events</h3>
-
-            <div class="log">
-                ${
-                    game.logs.slice(0,10).join("")
-                    ||
-                    "Your story begins here."
-                }
+        <!-- Right Timeline Sidebar -->
+        <aside>
+            <div class="timeline-header">Life Timeline Log</div>
+            <div class="timeline-logs" id="timeline-logs">
+                <!-- Log items -->
             </div>
+        </aside>
+    </div>
 
+    <!-- Bottom Controls -->
+    <footer>
+        <div>
+            <button class="btn-secondary" onclick="saveGame()">Save Game</button>
+            <button class="btn-secondary" onclick="loadGame()">Load Game</button>
+            <button class="btn-secondary" onclick="resetGamePrompt()">New Life</button>
         </div>
-    `;
-}
+        <button class="btn-age" onclick="advanceYear()">AGE +1</button>
+    </footer>
 
-
-/* =========================================================
-   EDUCATION
-========================================================= */
-
-function educationPage() {
-
-    let html = `
-
-        <div class="hero">
-
-            <h2>🎓 Education</h2>
-
-            <p>
-                Your education determines many of your
-                future opportunities.
-            </p>
-
-        </div>
-    `;
-
-
-    if (game.age < 6) {
-
-        html += `
-
-            <div class="card">
-
-                <h3>🧸 Preschool</h3>
-
-                <p>
-                    You are still in early childhood.
-                    Primary school selection unlocks at age 6.
-                </p>
-
+    <!-- Universal Event Modal -->
+    <div id="modal-container" class="modal-overlay hidden">
+        <div class="modal">
+            <div class="modal-title" id="modal-title">Event Title</div>
+            <div class="modal-body" id="modal-body">Event body description goes here.</div>
+            <div class="modal-actions" id="modal-actions">
+                <!-- Buttons injected dynamically -->
             </div>
-        `;
-    }
-
-
-    if (
-        game.age >= 6 &&
-        game.age <= 11 &&
-        !game.schoolType
-    ) {
-
-        html += `
-
-            <div class="card">
-
-                <h3>
-                    🏫 Choose Your Primary School
-                </h3>
-
-                <div class="choice">
-
-                    ${
-                        PRIMARY_SCHOOLS.map(
-                            (school,index) => `
-
-                                <button
-                                    onclick="choosePrimary(${index})"
-                                >
-
-                                    <b>
-                                        ${school[0]}
-                                    </b>
-
-                                    <br>
-
-                                    <span class="small">
-                                        Selectivity:
-                                        ${school[1]}
-                                    </span>
-
-                                </button>
-                            `
-                        ).join("")
-                    }
-
-                </div>
-
-            </div>
-        `;
-    }
-
-
-    if (
-        game.age >= 12 &&
-        game.age <= 15
-    ) {
-
-        html += `
-
-            <div class="card">
-
-                <h3>
-                    🏫 Secondary School
-                </h3>
-
-                <div class="choice">
-
-                    ${
-                        SECONDARY_SCHOOLS.map(
-                            (school,index) => `
-
-                                <button
-                                    onclick="chooseSecondary(${index})"
-                                >
-
-                                    <b>
-                                        ${school[0]}
-                                    </b>
-
-                                    <br>
-
-                                    <span class="small">
-                                        Selectivity:
-                                        ${school[1]}
-                                    </span>
-
-                                </button>
-                            `
-                        ).join("")
-                    }
-
-                </div>
-
-            </div>
-        `;
-    }
-
-
-    if (
-        game.age >= 6 &&
-        game.age <= 18 &&
-        !game.cca
-    ) {
-
-        html += `
-
-            <div class="card">
-
-                <h3>
-                    🎯 Choose a CCA
-                </h3>
-
-                <div class="choice">
-
-                    ${
-                        CCAS.map(
-                            (cca,index) => `
-
-                                <button
-                                    onclick="joinCCA(${index})"
-                                >
-
-                                    <b>
-                                        ${cca[0]}
-                                    </b>
-
-                                    <br>
-
-                                    <span class="small">
-                                        ${cca[1]} +
-                                        ${cca[2]}
-                                    </span>
-
-                                </button>
-                            `
-                        ).join("")
-                    }
-
-                </div>
-
-            </div>
-        `;
-    }
-
-
-    if (
-        game.age >= 16 &&
-        !game.postSecondary
-    ) {
-
-        html += `
-
-            <div class="card">
-
-                <h3>
-                    📚 Choose JC / Polytechnic / ITE
-                </h3>
-
-                <div class="choice">
-
-                    ${
-                        POST_SECONDARY.map(
-                            (school,index) => `
-
-                                <button
-                                    onclick="choosePostSecondary(${index})"
-                                >
-
-                                    <b>
-                                        ${school[0]}
-                                    </b>
-
-                                    <br>
-
-                                    <span class="small">
-                                        ${school[1]}
-                                        · Selectivity
-                                        ${school[2]}
-                                    </span>
-
-                                </button>
-                            `
-                        ).join("")
-                    }
-
-                </div>
-
-            </div>
-        `;
-    }
-
-
-    if (
-        game.age >= 18 &&
-        !game.university
-    ) {
-
-        html += `
-
-            <div class="card">
-
-                <h3>
-                    🎓 Choose University
-                </h3>
-
-                <p class="small">
-                    Overseas universities require at least
-                    90 Intelligence. Admission is not guaranteed.
-                </p>
-
-                <div class="choice">
-
-                    ${
-                        UNIVERSITIES.map(
-                            (uni,index) => `
-
-                                <button
-                                    onclick="applyUniversity(${index})"
-                                >
-
-                                    <b>
-                                        ${uni[0]}
-                                    </b>
-
-                                    <br>
-
-                                    ${uni[1]}
-
-                                    <br>
-
-                                    <span class="small">
-                                        Selectivity:
-                                        ${uni[2]}
-                                    </span>
-
-                                </button>
-                            `
-                        ).join("")
-                    }
-
-                </div>
-
-            </div>
-        `;
-    }
-
-
-    if (
-        game.university &&
-        !game.course
-    ) {
-
-        html += `
-
-            <div class="card">
-
-                <h3>
-                    📖 Choose Your Course
-                </h3>
-
-                <p>
-                    ${game.university}
-                </p>
-
-                <div class="choice">
-
-                    ${
-                        COURSES.map(
-                            (course,index) => `
-
-                                <button
-                                    onclick="chooseCourse(${index})"
-                                >
-
-                                    ${course}
-
-                                </button>
-                            `
-                        ).join("")
-                    }
-
-                </div>
-
-            </div>
-        `;
-    }
-
-
-    if (game.degree) {
-
-        html += `
-
-            <div class="success">
-
-                🎓 <b>
-                    ${game.degree}
-                </b>
-
-                <br>
-
-                ${game.course}
-
-                <br>
-
-                ${game.university}
-
-            </div>
-        `;
-    }
-
-
-    if (game.age >= 22) {
-
-        html += `
-
-            <div class="card">
-
-                <h3>
-                    🎓 Postgraduate Education
-                </h3>
-
-                ${button(
-                    "Master's Degree",
-                    "postgraduate('Masters')",
-                    "blue"
-                )}
-
-                ${button(
-                    "MBA",
-                    "postgraduate('MBA')",
-                    "blue"
-                )}
-
-                ${button(
-                    "JD",
-                    "postgraduate('JD')",
-                    "blue"
-                )}
-
-                ${button(
-                    "MD",
-                    "postgraduate('MD')",
-                    "blue"
-                )}
-
-                ${button(
-                    "PhD",
-                    "postgraduate('PhD')",
-                    "blue"
-                )}
-
-                <p class="small">
-                    MBA requires Business, Finance or Economics.
-                    JD requires Law.
-                    MD requires Medicine or Biological Sciences.
-                </p>
-
-            </div>
-        `;
-    }
-
-
-    document.getElementById("main").innerHTML = html;
-}
-
-
-/* =========================================================
-   EDUCATION FUNCTIONS
-========================================================= */
-
-function choosePrimary(index) {
-
-    const school = PRIMARY_SCHOOLS[index];
-
-    const score =
-        game.intelligence * 0.75 +
-        game.discipline * 0.25;
-
-    const probability =
-        0.18 +
-        (score - school[1]) / 32;
-
-    if (!chance(probability)) {
-
-        addLog(
-            `❌ ${school[0]} rejected you.`
-        );
-
-        educationPage();
-        return;
-    }
-
-    game.school = school[0];
-    game.schoolType = "primary";
-    game.stage = "Primary School";
-
-    addLog(
-        `🏫 Accepted into <b>${school[0]}</b>.`
-    );
-
-    saveGame();
-
-    educationPage();
-}
-
-
-function chooseSecondary(index) {
-
-    const school = SECONDARY_SCHOOLS[index];
-
-    const score =
-        game.intelligence * 0.7 +
-        game.discipline * 0.25 +
-        game.ccaLevel * 3;
-
-    const probability =
-        0.15 +
-        (score - school[1]) / 30;
-
-    if (!chance(probability)) {
-
-        addLog(
-            `❌ ${school[0]} rejected you.`
-        );
-
-        educationPage();
-        return;
-    }
-
-    game.school = school[0];
-    game.schoolType = "secondary";
-    game.stage = "Secondary School";
-
-    addLog(
-        `🏫 Accepted into <b>${school[0]}</b>.`
-    );
-
-    saveGame();
-
-    educationPage();
-}
-
-
-function joinCCA(index) {
-
-    const cca = CCAS[index];
-
-    game.cca = cca[0];
-    game.ccaLevel = 1;
-
-    game[cca[1]] += 4;
-    game[cca[2]] += 3;
-
-    addLog(
-        `🎯 Joined <b>${cca[0]}</b>.`
-    );
-
-    saveGame();
-
-    educationPage();
-}
-
-
-function choosePostSecondary(index) {
-
-    const school = POST_SECONDARY[index];
-
-    const score =
-        game.intelligence * 0.65 +
-        game.discipline * 0.35;
-
-    const probability =
-        0.18 +
-        (score - school[2]) / 38;
-
-    if (!chance(probability)) {
-
-        addLog(
-            `❌ ${school[0]} rejected you.`
-        );
-
-        educationPage();
-        return;
-    }
-
-    game.postSecondary = school[1];
-    game.school = school[0];
-    game.stage = school[1];
-
-    addLog(
-        `📚 Accepted into <b>${school[0]}</b>.`
-    );
-
-    saveGame();
-
-    educationPage();
-}
-
-
-function applyUniversity(index) {
-
-    const uni = UNIVERSITIES[index];
-
-    if (
-        uni[1] !== "Singapore" &&
-        game.intelligence < 90
-    ) {
-
-        addLog(
-            `❌ ${uni[0]} requires 90+ Intelligence.`
-        );
-
-        educationPage();
-        return;
-    }
-
-    const score =
-        game.intelligence * 0.55 +
-        game.discipline * 0.20 +
-        game.charisma * 0.10 +
-        game.ccaLevel * 3;
-
-    const probability =
-        0.06 +
-        (score - uni[2] + 10) / 100;
-
-    if (!chance(probability)) {
-
-        addLog(
-            `❌ ${uni[0]} rejected your application.`
-        );
-
-        educationPage();
-        return;
-    }
-
-    game.university = uni[0];
-    game.universityCountry = uni[1];
-    game.stage = "University";
-
-    addLog(
-        `🎓 Accepted to <b>${uni[0]}</b>.`
-    );
-
-    saveGame();
-
-    educationPage();
-}
-
-
-function chooseCourse(index) {
-
-    const course = COURSES[index];
-
-    const degrees = {
-
-        "Computer Science": "BSc Computer Science",
-        "Business": "Bachelor of Business",
-        "Finance": "BSc Finance",
-        "Economics": "BSc Economics",
-        "Law": "LLB Law",
-        "Medicine": "MBBS Medicine",
-        "Engineering": "BEng Engineering",
-        "Political Science": "BA Political Science",
-        "Communications": "BA Communications",
-        "Media Studies": "BA Media Studies",
-        "Psychology": "BA Psychology",
-        "Biological Sciences": "BSc Biological Sciences",
-        "Mathematics": "BSc Mathematics",
-        "Architecture": "BArch Architecture"
-    };
-
-    game.course = course;
-
-    game.degree = degrees[course];
-
-    game.degrees.push(game.degree);
-
-    addLog(
-        `📚 Chose <b>${course}</b>.`
-    );
-
-    saveGame();
-
-    educationPage();
-}
-
-
-function postgraduate(type) {
-
-    if (
-        type === "MBA" &&
-        ![
-            "Business",
-            "Finance",
-            "Economics"
-        ].includes(game.course)
-    ) {
-
-        addLog(
-            "❌ MBA requires Business, Finance or Economics."
-        );
-
-        educationPage();
-        return;
-    }
-
-
-    if (
-        type === "JD" &&
-        game.course !== "Law"
-    ) {
-
-        addLog(
-            "❌ JD requires Law."
-        );
-
-        educationPage();
-        return;
-    }
-
-
-    if (
-        type === "MD" &&
-        ![
-            "Medicine",
-            "Biological Sciences"
-        ].includes(game.course)
-    ) {
-
-        addLog(
-            "❌ MD requires Medicine or Biological Sciences."
-        );
-
-        educationPage();
-        return;
-    }
-
-
-    let degreeName;
-
-    if (type === "Masters")
-        degreeName = "Master's Degree";
-
-    if (type === "MBA")
-        degreeName = "MBA";
-
-    if (type === "JD")
-        degreeName = "Juris Doctor (JD)";
-
-    if (type === "MD")
-        degreeName = "Doctor of Medicine (MD)";
-
-    if (type === "PhD")
-        degreeName = "PhD";
-
-
-    game.postgraduate.push(degreeName);
-
-    addLog(
-        `🎓 Completed <b>${degreeName}</b>.`
-    );
-
-    saveGame();
-
-    educationPage();
-}
-
-
-/* =========================================================
-   ACTIVITIES
-========================================================= */
-
-function activityPage() {
-
-    let type = "adult";
-
-    if (game.age < 6)
-        type = "child";
-
-    else if (game.age < 13)
-        type = "school";
-
-    else if (game.age < 18)
-        type = "teen";
-
-    else if (game.age >= 65)
-        type = "retired";
-
-
-    const activities = ACTIVITIES[type];
-
-
-    document.getElementById("main").innerHTML = `
-
-        <div class="hero">
-
-            <h2>
-                🎯 Activities
-            </h2>
-
-            <p>
-                Do things during the year without ageing up.
-            </p>
-
         </div>
-
-
-        <div class="choice">
-
-            ${
-                activities.map(
-                    (activity,index) => `
-
-                        <button
-                            onclick="doActivity('${type}',${index})"
-                        >
-
-                            <b>
-                                ${activity[0]}
-                            </b>
-
-                            <br>
-
-                            <span class="small">
-                                +${activity[2]}
-                                ${activity[1]}
-                            </span>
-
-                        </button>
-                    `
-                ).join("")
-            }
-
-        </div>
-
-
-        <div class="card">
-
-            <h3>
-                🎯 CCA
-            </h3>
-
-            ${
-                game.cca
-                ? `
-                    <b>${game.cca}</b>
-                    <br>
-                    Level ${game.ccaLevel}
-                  `
-                : "No CCA selected."
-            }
-
-        </div>
-    `;
-}
-
-
-function doActivity(type,index) {
-
-    const activity = ACTIVITIES[type][index];
-
-    let cost = 0;
-
-    if (activity[0].startsWith("✈️"))
-        cost = 2000;
-
-    if (activity[0].startsWith("🍜"))
-        cost = 80;
-
-
-    if (game.money < cost) {
-
-        addLog(
-            "❌ You cannot afford that activity."
-        );
-
-        activityPage();
-        return;
-    }
-
-
-    game.money -= cost;
-
-
-    if (activity[1] === "reputation") {
-
-        game.reputation =
-            Math.min(
-                100,
-                game.reputation + activity[2]
-            );
-
-    } else {
-
-        game[activity[1]] =
-            Math.min(
-                100,
-                game[activity[1]] + activity[2]
-            );
-    }
-
-
-    addLog(
-        `🎯 ${activity[0]}.`
-    );
-
-    saveGame();
-
-    renderStats();
-
-    activityPage();
-}
-
-
-/* =========================================================
-   CAREER
-========================================================= */
-
-function careerPage() {
-
-    let html = `
-
-        <div class="hero">
-
-            <h2>
-                💼 Career
-            </h2>
-
-            <p>
-                Find jobs, get rejected, earn salaries,
-                gain experience and get promoted.
-            </p>
-
-        </div>
-    `;
-
-
-    if (game.career) {
-
-        html += `
-
-            <div class="success">
-
-                <b>
-                    ${game.role}
-                </b>
-
-                @
-
-                <b>
-                    ${game.company}
-                </b>
-
-                <br><br>
-
-                Monthly salary:
-                <span class="money">
-                    ${money(game.salary)}
-                </span>
-
-                <br>
-
-                Annual salary:
-                <span class="money">
-                    ${money(game.salary * 12)}
-                </span>
-
-                <br>
-
-                Years in role:
-                ${game.yearsInJob}
-
-                <br>
-
-                Career level:
-                ${game.careerLevel + 1}/5
-
-            </div>
-
-            ${button(
-                "📈 Work Another Year",
-                "workYear()",
-                "green"
-            )}
-
-            ${button(
-                "🚪 Quit Job",
-                "quitJob()",
-                "danger"
-            )}
-        `;
-    }
-
-
-    if (game.age >= 18) {
-
-        html += `
-
-            <div class="card">
-
-                <h3>
-                    🔎 Job Finder
-                </h3>
-
-                <div class="choice">
-
-                    ${
-                        JOBS.map(
-                            (job,index) => `
-
-                                <button
-                                    onclick="applyJob(${index})"
-                                >
-
-                                    <b>
-                                        ${job[0]}
-                                    </b>
-
-                                    <br>
-
-                                    ${job[1]}
-
-                                    <br>
-
-                                    <span class="small">
-                                        ${money(job[2])}/month
-                                        <br>
-                                        Entry requirement:
-                                        ${job[4]}+
-                                    </span>
-
-                                </button>
-                            `
-                        ).join("")
-                    }
-
-                </div>
-
-            </div>
-        `;
-    }
-
-
-    document.getElementById("main").innerHTML = html;
-}
-
-
-function applyJob(index) {
-
-    const job = JOBS[index];
-
-    let score =
-        game.intelligence * 0.40 +
-        game.discipline * 0.20 +
-        game.charisma * 0.20 +
-        game.fitness * 0.05;
-
-
-    if (game.degree)
-        score += 12;
-
-    score += game.postgraduate.length * 3;
-
-
-    if (
-        game.course === "Law" &&
-        job[1] === "Law"
-    )
-        score += 15;
-
-
-    if (
-        game.course === "Medicine" &&
-        job[1] === "Medicine"
-    )
-        score += 18;
-
-
-    if (
-        game.course === "Computer Science" &&
-        job[1] === "Technology"
-    )
-        score += 15;
-
-
-    if (
-        game.course === "Media Studies" &&
-        job[1] === "Media"
-    )
-        score += 15;
-
-
-    if (!chance(
-        0.07 +
-        (score - job[4]) / 85
-    )) {
-
-        addLog(
-            `❌ ${job[0]} rejected your application.`
-        );
-
-        careerPage();
-        return;
-    }
-
-
-    game.company = job[0];
-    game.career = job[1];
-    game.role = job[3][0];
-
-    game.careerLevel = 0;
-    game.salary = job[2];
-    game.yearsInJob = 0;
-
-    game.stage = "Working";
-
-
-    addLog(
-        `💼 Hired by <b>${job[0]}</b>
-        as ${game.role}.`
-    );
-
-    saveGame();
-
-    careerPage();
-}
-
-
-function workYear() {
-
-    if (!game.career)
-        return;
-
-
-    game.yearsInJob++;
-
-
-    game.money += game.salary * 12;
-
-
-    addLog(
-        `💰 Annual salary paid:
-        <b>${money(game.salary * 12)}</b>.`
-    );
-
-
-    if (
-        game.yearsInJob >= 2 &&
-        game.careerLevel < 4 &&
-        chance(0.65) &&
-        game.career !== "SAF"
-    ) {
-
-        game.careerLevel++;
-
-        const job =
-            JOBS.find(
-                x => x[0] === game.company
-            );
-
-
-        if (job) {
-
-            game.role =
-                job[3][game.careerLevel];
-
-            game.salary =
-                Math.round(
-                    game.salary * 1.20
-                );
-        }
-
-
-        addLog(
-            `📈 Promoted to
-            <b>${game.role}</b>.`
-        );
-    }
-
-
-    saveGame();
-
-    careerPage();
-}
-
-
-function quitJob() {
-
-    addLog(
-        `🚪 You left ${game.company}.`
-    );
-
-    game.company = "";
-    game.career = "";
-    game.role = "";
-    game.salary = 0;
-    game.careerLevel = 0;
-    game.yearsInJob = 0;
-
-    saveGame();
-
-    careerPage();
-}
-
-
-/* =========================================================
-   MONEY
-========================================================= */
-
-function moneyPage() {
-
-    document.getElementById("main").innerHTML = `
-
-        <div class="hero">
-
-            <h2>
-                💰 Money & Assets
-            </h2>
-
-            <p>
-                Spend your salary and build your wealth.
-            </p>
-
-        </div>
-
-
-        <div class="card">
-
-            Cash:
-            <b class="money">
-                ${money(game.money)}
-            </b>
-
-            <br>
-
-            Investments:
-            <b class="money">
-                ${money(game.investments)}
-            </b>
-
-            <br>
-
-            Cars:
-            ${game.cars.length}
-
-            <br>
-
-            Properties:
-            ${game.houses.length}
-
-        </div>
-
-
-        <div class="card">
-
-            <h3>
-                🚗 Cars
-            </h3>
-
-            <div class="choice">
-
-                ${
-                    CARS.map(
-                        (car,index) => `
-
-                            <button
-                                onclick="buyCar(${index})"
-                            >
-
-                                <b>
-                                    ${car[0]}
-                                </b>
-
-                                <br>
-
-                                ${money(car[1])}
-
-                            </button>
-                        `
-                    ).join("")
-                }
-
-            </div>
-
-        </div>
-
-
-        <div class="card">
-
-            <h3>
-                🏠 Properties
-            </h3>
-
-            <div class="choice">
-
-                ${
-                    HOUSES.map(
-                        (house,index) => `
-
-                            <button
-                                onclick="buyHouse(${index})"
-                            >
-
-                                <b>
-                                    ${house[0]}
-                                </b>
-
-                                <br>
-
-                                ${money(house[1])}
-
-                            </button>
-                        `
-                    ).join("")
-                }
-
-            </div>
-
-        </div>
-
-
-        <div class="card">
-
-            <h3>
-                📈 Investments
-            </h3>
-
-            ${button(
-                "Invest $10,000",
-                "investMoney(10000)",
-                "green"
-            )}
-
-            ${button(
-                "Invest $50,000",
-                "investMoney(50000)",
-                "green"
-            )}
-
-            ${button(
-                "Invest $100,000",
-                "investMoney(100000)",
-                "green"
-            )}
-
-            ${button(
-                "Liquidate Investments",
-                "liquidateInvestments()",
-                "blue"
-            )}
-
-        </div>
-    `;
-}
-
-
-function buyCar(index) {
-
-    const car = CARS[index];
-
-    if (game.money < car[1]) {
-
-        addLog(
-            "❌ Not enough money for that car."
-        );
-
-        moneyPage();
-        return;
-    }
-
-
-    game.money -= car[1];
-
-    game.cars.push(car[0]);
-
-    addLog(
-        `🚗 Bought <b>${car[0]}</b>.`
-    );
-
-    saveGame();
-
-    moneyPage();
-}
-
-
-function buyHouse(index) {
-
-    const house = HOUSES[index];
-
-    if (game.money < house[1]) {
-
-        addLog(
-            "❌ Not enough money for that property."
-        );
-
-        moneyPage();
-        return;
-    }
-
-
-    game.money -= house[1];
-
-    game.houses.push(house[0]);
-
-    addLog(
-        `🏠 Bought <b>${house[0]}</b>.`
-    );
-
-    saveGame();
-
-    moneyPage();
-}
-
-
-function investMoney(amount) {
-
-    if (game.money < amount) {
-
-        addLog(
-            "❌ Not enough money to invest."
-        );
-
-        moneyPage();
-        return;
-    }
-
-
-    game.money -= amount;
-
-    game.investments += amount;
-
-    addLog(
-        `📈 Invested ${money(amount)}.`
-    );
-
-    saveGame();
-
-    moneyPage();
-}
-
-
-function liquidateInvestments() {
-
-    if (!game.investments) {
-
-        addLog(
-            "❌ You have no investments."
-        );
-
-        moneyPage();
-        return;
-    }
-
-
-    const result =
-        Math.round(
-            game.investments *
-            (0.75 + Math.random() * 0.60)
-        );
-
-
-    game.money += result;
-
-    game.investments = 0;
-
-
-    addLog(
-        `📈 Liquidated investments for
-        <b>${money(result)}</b>.`
-    );
-
-    saveGame();
-
-    moneyPage();
-}
-
-
-/* =========================================================
-   RELATIONSHIPS
-========================================================= */
-
-function relationshipsPage() {
-
-    let html = `
-
-        <div class="hero">
-
-            <h2>
-                ❤️ Relationships
-            </h2>
-
-            <p>
-                Meet people, build friendships,
-                date, marry and have children.
-            </p>
-
-        </div>
-    `;
-
-
-    if (game.relationships.length) {
-
-        game.relationships.forEach(
-            (person,index) => {
-
-                html += `
-
-                    <div class="card">
-
-                        <b>
-                            ${person.name}
-                        </b>
-
-                        · ${person.age}
-
-                        <br>
-
-                        <span class="small">
-                            ${person.status}
-                        </span>
-
-                        <br>
-
-                        ${button(
-                            "💬 Spend Time",
-                            `interact(${index})`
-                        )}
-
-                        ${
-                            !game.married
-                            ? button(
-                                "❤️ Date",
-                                `datePerson(${index})`,
-                                "blue"
-                            )
-                            : ""
-                        }
-
-                    </div>
-                `;
-            }
-        );
-
-    } else {
-
-        html += `
-            <div class="card">
-                No significant relationships yet.
-            </div>
-        `;
-    }
-
-
-    if (game.age >= 18) {
-
-        html += button(
-            "👤 Meet Someone",
-            "meetPerson()",
-            "green"
-        );
-    }
-
-
-    if (game.married) {
-
-        html += `
-
-            <div class="success">
-
-                💍 Married
-
-                <br>
-
-                Children:
-                ${game.children}
-
-                ${
-                    game.children < 4
-                    ? button(
-                        "👶 Have Child",
-                        "haveChild()",
-                        "green"
-                    )
-                    : ""
-                }
-
-            </div>
-        `;
-    }
-
-
-    document.getElementById("main").innerHTML = html;
-}
-
-
-function meetPerson() {
-
-    const names = [
-
-        "Alicia",
-        "Benjamin",
-        "Chloe",
-        "Daniel",
-        "Emily",
-        "Fiona",
-        "Gabriel",
-        "Hannah",
-        "Isaac",
-        "Jasmine",
-        "Marcus",
-        "Nicole"
-
-    ];
-
-
-    const person = {
-
-        name:
-            names[
-                Math.floor(
-                    Math.random() * names.length
-                )
-            ],
-
-        age:
-            Math.max(
-                18,
-                game.age +
-                Math.floor(Math.random() * 7) -
-                3
-            ),
-
-        status: "Friend"
-    };
-
-
-    game.relationships.push(person);
-
-    addLog(
-        `❤️ Met <b>${person.name}</b>.`
-    );
-
-    saveGame();
-
-    relationshipsPage();
-}
-
-
-function interact(index) {
-
-    const person =
-        game.relationships[index];
-
-
-    if (chance(0.72)) {
-
-        person.status =
-            "Close Friend";
-
-        game.happiness =
-            Math.min(
-                100,
-                game.happiness + 4
-            );
-
-        addLog(
-            `💬 You spent time with
-            ${person.name}.`
-        );
-
-    } else {
-
-        addLog(
-            `😬 Conversation with
-            ${person.name} went badly.`
-        );
-    }
-
-
-    saveGame();
-
-    relationshipsPage();
-}
-
-
-function datePerson(index) {
-
-    const person =
-        game.relationships[index];
-
-
-    if (chance(0.60)) {
-
-        person.status = "Partner";
-
-        addLog(
-            `❤️ You started dating
-            ${person.name}.`
-        );
-
-
-        if (chance(0.45)) {
-
-            game.married = true;
-
-            person.status = "Spouse";
-
-            addLog(
-                `💍 You married
-                ${person.name}!`
-            );
-        }
-
-    } else {
-
-        addLog(
-            `💔 ${person.name}
-            rejected you.`
-        );
-    }
-
-
-    saveGame();
-
-    relationshipsPage();
-}
-
-
-function haveChild() {
-
-    game.children++;
-
-    addLog(
-        "👶 You welcomed a child."
-    );
-
-    saveGame();
-
-    relationshipsPage();
-}
-
-
-/* =========================================================
-   EMIGRATION
-========================================================= */
-
-function emigrationPage() {
-
-    const countries = [
-
-        ["United States", "New York / California"],
-        ["United Kingdom", "London"],
-        ["Australia", "Sydney / Melbourne"],
-        ["Canada", "Toronto / Vancouver"],
-        ["Japan", "Tokyo"],
-        ["Hong Kong", "Hong Kong"],
-        ["Switzerland", "Zürich"]
-
-    ];
-
-
-    document.getElementById("main").innerHTML = `
-
-        <div class="hero">
-
-            <h2>
-                ✈️ Emigration
-            </h2>
-
-            <p>
-                Move overseas for education,
-                work or a new life.
-            </p>
-
-        </div>
-
-
-        <div class="choice">
-
-            ${
-                countries.map(
-                    (country,index) => `
-
-                        <button
-                            onclick="moveCountry(${index})"
-                        >
-
-                            <b>
-                                ${country[0]}
-                            </b>
-
-                            <br>
-
-                            ${country[1]}
-
-                        </button>
-                    `
-                ).join("")
-            }
-
-        </div>
-    `;
-}
-
-
-function moveCountry(index) {
-
-    const countries = [
-
-        "United States",
-        "United Kingdom",
-        "Australia",
-        "Canada",
-        "Japan",
-        "Hong Kong",
-        "Switzerland"
-
-    ];
-
-
-    const country = countries[index];
-
-
-    if (
-        !chance(
-            0.45 +
-            game.reputation / 250
-        )
-    ) {
-
-        addLog(
-            `❌ Your move to
-            ${country} was unsuccessful.`
-        );
-
-        emigrationPage();
-
-        return;
-    }
-
-
-    game.country = country;
-
-
-    addLog(
-        `✈️ You moved to
-        <b>${country}</b>.`
-    );
-
-
-    saveGame();
-
-    emigrationPage();
-}
-
-
-/* =========================================================
-   ATHLETE
-========================================================= */
-
-function athletePage() {
-
-    let html = `
-
-        <div class="hero">
-
-            <h2>
-                🏆 Athlete Mode
-            </h2>
-
-            <p>
-                Attempt to reach professional sport.
-            </p>
-
-        </div>
-
-
-        <div class="choice">
-
-            ${button(
-                "🏀 NBA",
-                "tryAthlete('NBA')"
-            )}
-
-            ${button(
-                "⚽ Premier League",
-                "tryAthlete('Premier League')"
-            )}
-
-        </div>
-    `;
-
-
-    if (game.athlete) {
-
-        html += `
-
-            <div class="success">
-
-                🏆 ${game.athlete}
-
-                <br>
-
-                ${game.athleteClub}
-
-                <br>
-
-                Annual salary:
-                ${money(game.athleteSalary)}
-
-            </div>
-        `;
-    }
-
-
-    document.getElementById("main").innerHTML = html;
-}
-
-
-function tryAthlete(type) {
-
-    if (game.age < 16) {
-
-        addLog(
-            "❌ Elite scouting starts at age 16."
-        );
-
-        athletePage();
-
-        return;
-    }
-
-
-    let fitness =
-        game.fitness;
-
-
-    if (
-        game.cca === "Football" &&
-        type === "Premier League"
-    ) {
-
-        fitness += 15;
-    }
-
-
-    const probability =
-        0.02 +
-        (fitness - 65) / 105;
-
-
-    if (!chance(probability)) {
-
-        addLog(
-            `❌ You were cut from the
-            ${type} pathway.`
-        );
-
-        athletePage();
-
-        return;
-    }
-
-
-    game.athlete = type;
-
-
-    if (type === "NBA") {
-
-        game.athleteClub =
-            "NBA / G League pathway";
-
-        game.athleteSalary =
-            150000;
-
-    } else {
-
-        game.athleteClub =
-            "Premier League Academy";
-
-        game.athleteSalary =
-            100000;
-    }
-
-
-    game.career =
-        "Professional Athlete";
-
-    game.company = type;
-
-    game.role =
-        game.athleteClub;
-
-    game.salary =
-        Math.round(
-            game.athleteSalary / 12
-        );
-
-
-    addLog(
-        `🏆 Scouted into the
-        <b>${type}</b> pathway!`
-    );
-
-
-    saveGame();
-
-    athletePage();
-}
-
-
-/* =========================================================
-   MEDIA
-========================================================= */
-
-function mediaPage() {
-
-    const mediaJobs =
-        JOBS
-        .map((job,index) => [job,index])
-        .filter(x => x[0][1] === "Media");
-
-
-    document.getElementById("main").innerHTML = `
-
-        <div class="hero">
-
-            <h2>
-                🎬 Media
-            </h2>
-
-            <p>
-                Journalism, broadcasting,
-                production and streaming.
-            </p>
-
-        </div>
-
-
-        <div class="choice">
-
-            ${
-                mediaJobs.map(
-                    item => `
-
-                        <button
-                            onclick="applyJob(${item[1]})"
-                        >
-
-                            <b>
-                                ${item[0][0]}
-                            </b>
-
-                            <br>
-
-                            ${item[0][3][0]}
-
-                            <br>
-
-                            <span class="small">
-                                ${money(item[0][2])}/month
-                            </span>
-
-                        </button>
-                    `
-                ).join("")
-            }
-
-        </div>
-    `;
-}
-
-
-/* =========================================================
-   SAF
-========================================================= */
-
-function safPage() {
-
-    document.getElementById("main").innerHTML = `
-
-        <div class="hero">
-
-            <h2>
-                🪖 Singapore Armed Forces
-            </h2>
-
-            <p>
-                Sign on as a Man, Specialist
-                or Officer and progress through ranks.
-            </p>
-
-        </div>
-
-
-        <div class="choice">
-
-            ${button(
-                "🪖 Man",
-                "signSAF('Man')"
-            )}
-
-            ${button(
-                "🎖️ Specialist",
-                "signSAF('Specialist')"
-            )}
-
-            ${button(
-                "⭐ Officer",
-                "signSAF('Officer')"
-            )}
-
-        </div>
-
-
-        ${
-            game.safType
-            ? `
-
-                <div class="success">
-
-                    🪖 ${game.safType}
-
-                    <br>
-
-                    Rank:
-                    <b>
-                        ${game.safRank}
-                    </b>
-
-                    <br>
-
-                    Years Served:
-                    ${game.safYears}
-
-                </div>
-
-              `
-            : ""
-        }
-    `;
-}
-
-
-function signSAF(type) {
-
-    if (game.age < 18) {
-
-        addLog(
-            "❌ You must be 18+ to sign on."
-        );
-
-        safPage();
-
-        return;
-    }
-
-
-    game.safType = type;
-
-    game.safRank =
-        SAF_RANKS[type][0];
-
-    game.safYears = 0;
-
-    game.career = "SAF";
-    game.company =
-        "Singapore Armed Forces";
-
-    game.role =
-        game.safRank;
-
-
-    if (type === "Officer")
-        game.salary = 5000;
-
-    else if (type === "Specialist")
-        game.salary = 3600;
-
-    else
-        game.salary = 2800;
-
-
-    game.nsCompleted = true;
-
-
-    addLog(
-        `🪖 Signed on as a
-        <b>${type}</b>.`
-    );
-
-
-    saveGame();
-
-    safPage();
-}
-
-
-/* =========================================================
-   POLITICS
-========================================================= */
-
-function politicsPage() {
-
-    document.getElementById("main").innerHTML = `
-
-        <div class="hero">
-
-            <h2>
-                🏛️ Politics
-            </h2>
-
-            <p>
-                Run for Parliament, enter Cabinet,
-                become Prime Minister or run for President.
-            </p>
-
-        </div>
-
-
-        <div class="card">
-
-            Party:
-            <b>
-                ${game.politicalParty || "None"}
-            </b>
-
-            <br>
-
-            Election wins:
-            ${game.electionWins}
-
-            <br>
-
-            MP:
-            ${game.mp ? "Yes" : "No"}
-
-            <br>
-
-            Cabinet:
-            ${game.cabinet ? "Yes" : "No"}
-
-            <br>
-
-            Prime Minister:
-            ${game.pm ? "Yes" : "No"}
-
-            <br>
-
-            President:
-            ${game.president ? "Yes" : "No"}
-
-            <br>
-
-            Reputation:
-            ${game.reputation}
-
-        </div>
-
-
-        <div class="choice">
-
-            ${button(
-                "🇸🇬 Join PAP",
-                "joinParty('PAP')"
-            )}
-
-            ${button(
-                "🔵 Join Workers' Party",
-                "joinParty('Workers Party')"
-            )}
-
-            ${button(
-                "⚪ Independent",
-                "joinParty('Independent')"
-            )}
-
-        </div>
-
-
-        ${
-            game.age >= 21
-            ? `
-
-                <div class="card">
-
-                    ${button(
-                        "🗳️ Contest Election",
-                        "contestElection()",
-                        "green"
-                    )}
-
-                    ${
-                        game.mp
-                        ? button(
-                            "🏛️ Seek Cabinet",
-                            "seekCabinet()",
-                            "blue"
-                        )
-                        : ""
-                    }
-
-                    ${
-                        game.cabinet
-                        ? button(
-                            "🇸🇬 Seek Prime Minister",
-                            "becomePrimeMinister()",
-                            "gold"
-                        )
-                        : ""
-                    }
-
-                    ${button(
-                        "🇸🇬 Run for President",
-                        "runForPresident()",
-                        "gold"
-                    )}
-
-                </div>
-
-              `
-            : ""
-        }
-    `;
-}
-
-
-function joinParty(party) {
-
-    game.politicalParty = party;
-
-    addLog(
-        `🏛️ Joined <b>${party}</b>.`
-    );
-
-    saveGame();
-
-    politicsPage();
-}
-
-
-function contestElection() {
-
-    if (!game.politicalParty) {
-
-        addLog(
-            "❌ Choose a party or Independent first."
-        );
-
-        politicsPage();
-
-        return;
-    }
-
-
-    const score =
-        game.charisma * 0.35 +
-        game.intelligence * 0.25 +
-        game.discipline * 0.20 +
-        game.reputation * 0.20;
-
-
-    const probability =
-        0.03 +
-        (score - 45) / 100;
-
-
-    if (!chance(probability)) {
-
-        addLog(
-            "🗳️ You lost the election."
-        );
-
-        game.reputation =
-            Math.max(
-                0,
-                game.reputation - 3
-            );
-
-        politicsPage();
-
-        return;
-    }
-
-
-    game.electionWins++;
-
-    game.mp = true;
-
-    game.career = "Politics";
-
-    game.company =
-        "Parliament of Singapore";
-
-    game.role =
-        "Member of Parliament";
-
-    game.salary = 14000;
-
-    game.reputation =
-        Math.min(
-            100,
-            game.reputation + 8
-        );
-
-
-    addLog(
-        "🗳️ <b>You won a parliamentary seat!</b>"
-    );
-
-
-    saveGame();
-
-    politicsPage();
-}
-
-
-function seekCabinet() {
-
-    if (!game.mp) {
-
-        addLog(
-            "❌ You need to be an MP."
-        );
-
-        politicsPage();
-
-        return;
-    }
-
-
-    if (chance(0.50)) {
-
-        game.cabinet = true;
-
-
-        const ministers = [
-
-            "Minister for Education",
-            "Minister for Finance",
-            "Minister for Health",
-            "Minister for Transport",
-            "Minister for National Development",
-            "Minister for Communications and Information"
-
+    </div>
+
+    <!-- JavaScript Game Logic -->
+    <script>
+        // ==========================================
+        // DATA STRUCTURES & CONFIGURATION
+        // ==========================================
+        const CITIES = {
+            "New York, NY": { col: 1.8, tax: 0.08, jobBias: "Finance/Law" },
+            "Los Angeles, CA": { col: 1.6, tax: 0.09, jobBias: "Entertainment/Tech" },
+            "San Francisco, CA": { col: 2.0, tax: 0.09, jobBias: "Technology/VC" },
+            "Boston, MA": { col: 1.5, tax: 0.05, jobBias: "Education/Biotech" },
+            "Chicago, IL": { col: 1.2, tax: 0.06, jobBias: "Finance/Corporate" },
+            "Austin, TX": { col: 1.1, tax: 0.00, jobBias: "Tech/Startups" },
+            "Miami, FL": { col: 1.3, tax: 0.00, jobBias: "Real Estate/Finance" },
+            "Houston, TX": { col: 0.9, tax: 0.00, jobBias: "Energy/Medicine" }
+        };
+
+        const UNIVERSITIES = [
+            { name: "Harvard University", tier: "Elite", tuition: 55000, minGpa: 3.8, minSat: 1500 },
+            { name: "Stanford University", tier: "Elite", tuition: 56000, minGpa: 3.8, minSat: 1510 },
+            { name: "MIT", tier: "Elite", tuition: 55000, minGpa: 3.9, minSat: 1530 },
+            { name: "UC Berkeley", tier: "Major Public", tuition: 28000, minGpa: 3.5, minSat: 1380 },
+            { name: "UT Austin", tier: "Major Public", tuition: 22000, minGpa: 3.3, minSat: 1300 },
+            { name: "State University", tier: "Public", tuition: 12000, minGpa: 2.5, minSat: 1000 }
         ];
 
+        const COMPANIES = {
+            "Tech": ["Apple", "Google", "Microsoft", "Nvidia", "Meta"],
+            "Finance": ["Goldman Sachs", "JPMorgan", "Morgan Stanley", "BlackRock"],
+            "Consulting": ["McKinsey & Co", "Bain", "BCG"],
+            "Law": ["Kirkland & Ellis", "Latham & Watkins"],
+            "Healthcare": ["Mayo Clinic", "Johns Hopkins Medicine"]
+        };
 
-        game.minister =
-            ministers[
-                Math.floor(
-                    Math.random() *
-                    ministers.length
-                )
-            ];
+        const CAREER_LADDERS = {
+            "Software Engineer": ["Junior Developer", "Senior Engineer", "Staff Engineer", "Engineering Manager", "VP of Engineering", "CTO"],
+            "Finance Analyst": ["Financial Analyst", "Associate", "Vice President", "Managing Director", "Partner"],
+            "Management Consultant": ["Business Analyst", "Consultant", "Project Leader", "Principal", "Partner"],
+            "Corporate Attorney": ["Junior Associate", "Senior Associate", "Counsel", "Partner"],
+            "Physician": ["Resident Physician", "Attending Physician", "Specialist", "Department Chief"]
+        };
 
+        const BASE_SALARIES = {
+            "Software Engineer": 95000,
+            "Finance Analyst": 110000,
+            "Management Consultant": 100000,
+            "Corporate Attorney": 160000,
+            "Physician": 210000,
+            "Retail Worker": 32000
+        };
 
-        game.role =
-            "Cabinet Minister";
+        // ==========================================
+        // GAME STATE MANAGEMENT
+        // ==========================================
+        let state = {
+            activeTab: 'dashboard',
+            character: null,
+            stats: { health: 90, happiness: 85, stress: 20, reputation: 50 },
+            education: { gpa: 3.5, sat: 1250, degree: 'High School Diploma', major: 'None', school: 'Public High School' },
+            career: { title: 'Unemployed', company: 'None', salary: 0, level: 0, ladder: null, yearsAtCompany: 0, performance: 70 },
+            finances: { cash: 0, netWorth: 0, savingsRate: 0.2, annualExpenses: 25000 },
+            investments: { stocks: 0, bonds: 0, crypto: 0 },
+            realEstate: [], // { name, value, mortgage }
+            relationships: [], // { name, relation, trust, closeness }
+            startup: null, // { name, industry, valuation, revenue }
+            logs: [],
+            marketCycle: 'Bull Market' // Bull, Bear, Recession
+        };
 
-        game.salary = 25000;
-
-
-        addLog(
-            `🏛️ Appointed
-            <b>${game.minister}</b>.`
-        );
-
-    } else {
-
-        addLog(
-            "❌ You were not selected for Cabinet."
-        );
-    }
-
-
-    saveGame();
-
-    politicsPage();
-}
-
-
-function becomePrimeMinister() {
-
-    if (!game.cabinet) {
-
-        addLog(
-            "❌ Cabinet membership is required."
-        );
-
-        politicsPage();
-
-        return;
-    }
-
-
-    if (chance(0.18)) {
-
-        game.pm = true;
-
-        game.role =
-            "Prime Minister";
-
-        game.salary = 30000;
-
-        game.reputation =
-            Math.min(
-                100,
-                game.reputation + 20
-            );
-
-
-        addLog(
-            "🇸🇬 <b>You became Prime Minister!</b>"
-        );
-
-    } else {
-
-        addLog(
-            "❌ Leadership bid failed."
-        );
-    }
-
-
-    saveGame();
-
-    politicsPage();
-}
-
-
-function runForPresident() {
-
-    if (
-        !game.mp &&
-        !game.cabinet &&
-        !game.pm
-    ) {
-
-        addLog(
-            "❌ You need substantial public service first."
-        );
-
-        politicsPage();
-
-        return;
-    }
-
-
-    const probability =
-        0.05 +
-        game.reputation / 250 +
-        game.charisma / 600 +
-        (game.pm ? 0.15 : 0);
-
-
-    if (chance(probability)) {
-
-        game.president = true;
-
-        game.role =
-            "President of Singapore";
-
-        game.company =
-            "The Istana";
-
-        game.salary = 46000;
-
-        game.reputation = 100;
-
-
-        addLog(
-            "🇸🇬 <b>You became President!</b>"
-        );
-
-    } else {
-
-        addLog(
-            "🗳️ Presidential campaign unsuccessful."
-        );
-    }
-
-
-    saveGame();
-
-    politicsPage();
-}
-
-
-/* =========================================================
-   LIFE LOG
-========================================================= */
-
-function logPage() {
-
-    document.getElementById("main").innerHTML = `
-
-        <div class="hero">
-
-            <h2>
-                📜 Life Log
-            </h2>
-
-        </div>
-
-
-        <div class="card log">
-
-            ${
-                game.logs.join("")
+        // ==========================================
+        // INITIALIZATION & CHARACTER CREATION
+        // ==========================================
+        window.onload = function() {
+            if (localStorage.getItem('american_dream_save')) {
+                loadGame();
+            } else {
+                showCharacterCreation();
             }
+        };
 
-        </div>
-    `;
-}
-
-
-/* =========================================================
-   AGE UP
-========================================================= */
-
-function ageUp() {
-
-    if (!game) {
-
-        alert(
-            "Start a life first."
-        );
-
-        return;
-    }
-
-
-    if (!game.alive) {
-
-        alert(
-            "This life has ended."
-        );
-
-        return;
-    }
-
-
-    if (game.age >= 100) {
-
-        game.alive = false;
-
-        addLog(
-            "⚰️ You died peacefully at age 100."
-        );
-
-        render();
-
-        return;
-    }
-
-
-    game.age++;
-
-
-    /* YEARLY SALARY */
-
-    if (game.salary > 0) {
-
-        const annualSalary =
-            game.salary * 12;
-
-        game.money += annualSalary;
-
-        addLog(
-            `💰 Annual salary paid:
-            <b>${money(annualSalary)}</b>.`
-        );
-    }
-
-
-    /* CAREER PROGRESSION */
-
-    if (
-        game.career &&
-        game.salary > 0
-    ) {
-
-        game.yearsInJob++;
-
-
-        if (
-            game.yearsInJob >= 2 &&
-            game.careerLevel < 4 &&
-            chance(0.62) &&
-            game.career !== "SAF" &&
-            game.career !== "Politics"
-        ) {
-
-            game.careerLevel++;
-
-            const job =
-                JOBS.find(
-                    x =>
-                    x[0] === game.company
-                );
-
-
-            if (job) {
-
-                game.role =
-                    job[3][
-                        game.careerLevel
-                    ];
-
-                game.salary =
-                    Math.round(
-                        game.salary * 1.20
-                    );
-
-
-                addLog(
-                    `📈 Promoted to
-                    <b>${game.role}</b>.`
-                );
-            }
+        function showCharacterCreation() {
+            const html = `
+                <div style="max-width:600px; margin:40px auto;" class="card">
+                    <h2 style="font-size:1.8rem; margin-bottom:16px; text-align:center;">CREATE YOUR CHARACTER</h2>
+                    <div class="form-group">
+                        <label class="form-label">First Name</label>
+                        <input type="text" id="create-firstname" class="form-input" value="Alex">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Last Name</label>
+                        <input type="text" id="create-lastname" class="form-input" value="Morgan">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Starting Location</label>
+                        <select id="create-city" class="form-select">
+                            ${Object.keys(CITIES).map(c => `<option value="${c}">${c}</option>`).join('')}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Family Background</label>
+                        <select id="create-background" class="form-select">
+                            <option value="Working Class">Working Class (Household Income: $45k)</option>
+                            <option value="Middle Class" selected>Middle Class (Household Income: $90k)</option>
+                            <option value="Upper-Middle Class">Upper-Middle Class (Household Income: $180k)</option>
+                            <option value="Wealthy">Wealthy (Household Income: $400k)</option>
+                            <option value="Ultra-Wealthy">Ultra-Wealthy (Household Income: $2M+)</option>
+                        </select>
+                    </div>
+                    <button class="btn-age" style="width:100%; margin-top:16px;" onclick="finishCharacterCreation()">BEGIN LIFE</button>
+                </div>
+            `;
+            document.getElementById('main-content').innerHTML = html;
         }
-    }
 
+        function finishCharacterCreation() {
+            const fn = document.getElementById('create-firstname').value || 'Alex';
+            const ln = document.getElementById('create-lastname').value || 'Morgan';
+            const city = document.getElementById('create-city').value;
+            const bg = document.getElementById('create-background').value;
 
-    /* SAF PROGRESSION */
+            let startingCash = 0;
+            if (bg === "Working Class") startingCash = 1000;
+            if (bg === "Middle Class") startingCash = 5000;
+            if (bg === "Upper-Middle Class") startingCash = 25000;
+            if (bg === "Wealthy") startingCash = 100000;
+            if (bg === "Ultra-Wealthy") startingCash = 500000;
 
-    if (game.safType) {
+            state.character = {
+                firstName: fn,
+                lastName: ln,
+                age: 18,
+                city: city,
+                background: bg
+            };
 
-        game.safYears++;
+            state.finances.cash = startingCash;
+            state.finances.netWorth = startingCash;
 
+            // Generate initial family
+            state.relationships.push({ name: `${ln} Family`, relation: 'Parents', trust: 80, closeness: 85 });
 
-        const ranks =
-            SAF_RANKS[
-                game.safType
-            ];
-
-
-        const current =
-            ranks.indexOf(
-                game.safRank
-            );
-
-
-        if (
-            current < ranks.length - 1 &&
-            chance(0.68)
-        ) {
-
-            game.safRank =
-                ranks[current + 1];
-
-            game.role =
-                game.safRank;
-
-            game.salary =
-                Math.round(
-                    game.salary * 1.16
-                );
-
-
-            addLog(
-                `🪖 Promoted to
-                <b>${game.safRank}</b>.`
-            );
+            addLog(`Born in ${city} to a ${bg} family. Turned 18 and ready to enter the world.`);
+            updateUI();
+            renderDashboard();
         }
-    }
 
+        // ==========================================
+        // UI RENDERERS & ROUTING
+        // ==========================================
+        function updateUI() {
+            if (!state.character) return;
+            document.getElementById('top-name').innerText = `${state.character.firstName} ${state.character.lastName}`;
+            document.getElementById('top-age').innerText = state.character.age;
+            document.getElementById('top-location').innerText = state.character.city;
+            document.getElementById('top-occupation').innerText = state.career.title;
+            document.getElementById('top-cash').innerText = formatMoney(state.finances.cash);
+            document.getElementById('top-networth').innerText = formatMoney(calculateNetWorth());
 
-    /* NS */
+            renderTimelineLogs();
+        }
 
-    if (
-        game.age === 18 &&
-        !game.safType &&
-        !game.nsCompleted
-    ) {
+        function switchTab(tab) {
+            state.activeTab = tab;
+            document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
 
-        game.ns = true;
+            if (tab === 'dashboard') renderDashboard();
+            if (tab === 'education') renderEducation();
+            if (tab === 'career') renderCareer();
+            if (tab === 'finance') renderFinance();
+            if (tab === 'realestate') renderRealEstate();
+            if (tab === 'relationships') renderRelationships();
+            if (tab === 'relocate') renderRelocate();
+        }
 
-        addLog(
-            "🪖 <b>National Service:</b>
-            you are liable for NS."
-        );
-    }
+        function renderDashboard() {
+            const html = `
+                <div class="card-grid">
+                    <div class="card">
+                        <div class="card-title">Health</div>
+                        <div class="card-value">${state.stats.health}%</div>
+                        <div class="meter"><div class="meter-fill" style="width:${state.stats.health}%"></div></div>
+                    </div>
+                    <div class="card">
+                        <div class="card-title">Happiness</div>
+                        <div class="card-value">${state.stats.happiness}%</div>
+                        <div class="meter"><div class="meter-fill" style="width:${state.stats.happiness}%; background:var(--accent-gold);"></div></div>
+                    </div>
+                    <div class="card">
+                        <div class="card-title">Stress</div>
+                        <div class="card-value">${state.stats.stress}%</div>
+                        <div class="meter"><div class="meter-fill" style="width:${state.stats.stress}%; background:var(--accent-red);"></div></div>
+                    </div>
+                    <div class="card">
+                        <div class="card-title">Professional Reputation</div>
+                        <div class="card-value">${state.stats.reputation}/100</div>
+                        <div class="meter"><div class="meter-fill" style="width:${state.stats.reputation}%; background:var(--accent-blue);"></div></div>
+                    </div>
+                </div>
 
+                <div class="card" style="margin-bottom:24px;">
+                    <div class="card-title">Current Status Overview</div>
+                    <table class="data-table">
+                        <tr><td><strong>Education</strong></td><td>${state.education.degree} (${state.education.school})</td></tr>
+                        <tr><td><strong>Occupation</strong></td><td>${state.career.title} at ${state.career.company}</td></tr>
+                        <tr><td><strong>Annual Salary</strong></td><td class="text-green">${formatMoney(state.career.salary)}</td></tr>
+                        <tr><td><strong>Living Costs</strong></td><td class="text-red">${formatMoney(calculateAnnualExpenses())} / year</td></tr>
+                        <tr><td><strong>Economic Climate</strong></td><td>${state.marketCycle}</td></tr>
+                    </table>
+                </div>
+            `;
+            document.getElementById('main-content').innerHTML = html;
+        }
 
-    /* RESERVIST */
+        function renderEducation() {
+            let html = `
+                <div class="card" style="margin-bottom:24px;">
+                    <div class="card-title">Educational Profile</div>
+                    <p><strong>Highest Degree:</strong> ${state.education.degree}</p>
+                    <p><strong>Institution:</strong> ${state.education.school}</p>
+                    <p><strong>High School GPA:</strong> ${state.education.gpa} | <strong>SAT Score:</strong> ${state.education.sat}</p>
+                </div>
+                <div class="card">
+                    <div class="card-title">Apply to College / Graduate School</div>
+                    <table class="data-table">
+                        <thead>
+                            <tr><th>University</th><th>Tier</th><th>Annual Tuition</th><th>Min GPA Required</th><th>Action</th></tr>
+                        </thead>
+                        <tbody>
+                            ${UNIVERSITIES.map(u => `
+                                <tr>
+                                    <td><strong>${u.name}</strong></td>
+                                    <td>${u.tier}</td>
+                                    <td>${formatMoney(u.tuition)}</td>
+                                    <td>${u.minGpa}</td>
+                                    <td><button class="btn-secondary" onclick="applyToUniversity('${u.name}')">Apply</button></td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+            document.getElementById('main-content').innerHTML = html;
+        }
 
-    if (
-        game.age >= 20 &&
-        game.age <= 40 &&
-        game.age % 2 === 0 &&
-        !game.safType
-    ) {
+        function renderCareer() {
+            let html = `
+                <div class="card-grid">
+                    <div class="card">
+                        <div class="card-title">Current Position</div>
+                        <div class="card-value">${state.career.title}</div>
+                        <div class="card-desc">${state.career.company}</div>
+                    </div>
+                    <div class="card">
+                        <div class="card-title">Annual Compensation</div>
+                        <div class="card-value text-green">${formatMoney(state.career.salary)}</div>
+                        <div class="card-desc">Base salary + bonuses</div>
+                    </div>
+                </div>
 
-        game.reservist = true;
+                <div class="card" style="margin-bottom:24px;">
+                    <div class="card-title">Career Actions</div>
+                    <div style="display:flex; gap:12px; margin-top:12px;">
+                        <button class="btn-secondary" onclick="workHard()">Work Overtime (+Performance, +Stress)</button>
+                        <button class="btn-secondary" onclick="requestPromotion()">Request Promotion / Raise</button>
+                        <button class="btn-secondary" onclick="quitJob()">Quit Job</button>
+                    </div>
+                </div>
 
-        addLog(
-            "🪖 <b>Reservist cycle:</b>
-            mandatory training this year."
-        );
-    }
+                <div class="card">
+                    <div class="card-title">Job Openings</div>
+                    <table class="data-table">
+                        <thead>
+                            <tr><th>Track</th><th>Company</th><th>Entry Salary</th><th>Action</th></tr>
+                        </thead>
+                        <tbody>
+                            ${Object.keys(CAREER_LADDERS).map(ladder => {
+                                const companyList = COMPANIES[getIndustryForLadder(ladder)] || ["Corporate Corp"];
+                                const comp = companyList[Math.floor(Math.random() * companyList.length)];
+                                const salary = BASE_SALARIES[ladder];
+                                return `
+                                    <tr>
+                                        <td><strong>${ladder}</strong></td>
+                                        <td>${comp}</td>
+                                        <td class="text-green">${formatMoney(salary)}</td>
+                                        <td><button class="btn-secondary" onclick="applyForJob('${ladder}', '${comp}', ${salary})">Apply</button></td>
+                                    </tr>
+                                `;
+                            }).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+            document.getElementById('main-content').innerHTML = html;
+        }
 
+        function renderFinance() {
+            const html = `
+                <div class="card-grid">
+                    <div class="card">
+                        <div class="card-title">Stock Portfolio</div>
+                        <div class="card-value text-green">${formatMoney(state.investments.stocks)}</div>
+                        <button class="btn-secondary" style="margin-top:10px;" onclick="investMoney('stocks')">Invest Cash</button>
+                    </div>
+                    <div class="card">
+                        <div class="card-title">Bonds / Treasury</div>
+                        <div class="card-value">${formatMoney(state.investments.bonds)}</div>
+                        <button class="btn-secondary" style="margin-top:10px;" onclick="investMoney('bonds')">Invest Cash</button>
+                    </div>
+                    <div class="card">
+                        <div class="card-title">Crypto Assets</div>
+                        <div class="card-value text-gold">${formatMoney(state.investments.crypto)}</div>
+                        <button class="btn-secondary" style="margin-top:10px;" onclick="investMoney('crypto')">Invest Cash</button>
+                    </div>
+                </div>
+            `;
+            document.getElementById('main-content').innerHTML = html;
+        }
 
-    /* HEALTH */
+        function renderRealEstate() {
+            let html = `
+                <div class="card" style="margin-bottom:24px;">
+                    <div class="card-title">Owned Properties</div>
+                    ${state.realEstate.length === 0 ? '<p style="font-size:0.9rem; color:var(--text-muted);">You do not own any real estate properties.</p>' : ''}
+                    <table class="data-table">
+                        <thead><tr><th>Property</th><th>Est. Value</th><th>Mortgage Remaining</th></tr></thead>
+                        <tbody>
+                            ${state.realEstate.map(p => `
+                                <tr><td><strong>${p.name}</strong></td><td class="text-green">${formatMoney(p.value)}</td><td class="text-red">${formatMoney(p.mortgage)}</td></tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
 
-    if (game.age >= 40) {
+                <div class="card">
+                    <div class="card-title">Real Estate Market (${state.character.city})</div>
+                    <table class="data-table">
+                        <thead><tr><th>Property Type</th><th>Price</th><th>Down Payment (20%)</th><th>Action</th></tr></thead>
+                        <tbody>
+                            <tr><td>Suburban House</td><td>$450,000</td><td>$90,000</td><td><button class="btn-secondary" onclick="buyProperty('Suburban House', 450000)">Buy</button></td></tr>
+                            <tr><td>Luxury City Condo</td><td>$850,000</td><td>$170,000</td><td><button class="btn-secondary" onclick="buyProperty('Luxury City Condo', 850000)">Buy</button></td></tr>
+                            <tr><td>Prime Penthouse</td><td>$2,500,000</td><td>$500,000</td><td><button class="btn-secondary" onclick="buyProperty('Prime Penthouse', 2500000)">Buy</button></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            `;
+            document.getElementById('main-content').innerHTML = html;
+        }
 
-        game.health -=
-            Math.floor(
-                Math.random() * 3
-            );
-    }
+        function renderRelationships() {
+            let html = `
+                <div class="card">
+                    <div class="card-title">Relationships Network</div>
+                    <table class="data-table">
+                        <thead><tr><th>Name</th><th>Relation</th><th>Closeness</th><th>Action</th></tr></thead>
+                        <tbody>
+                            ${state.relationships.map((r, i) => `
+                                <tr>
+                                    <td><strong>${r.name}</strong></td>
+                                    <td>${r.relation}</td>
+                                    <td>${r.closeness}%</td>
+                                    <td><button class="btn-secondary" onclick="spendQualityTime(${i})">Spend Time</button></td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+            document.getElementById('main-content').innerHTML = html;
+        }
 
+        function renderRelocate() {
+            let html = `
+                <div class="card">
+                    <div class="card-title">Relocate to Another US City</div>
+                    <table class="data-table">
+                        <thead><tr><th>City</th><th>Cost of Living Index</th><th>Tax Rate</th><th>Action</th></tr></thead>
+                        <tbody>
+                            ${Object.keys(CITIES).map(c => `
+                                <tr>
+                                    <td><strong>${c}</strong></td>
+                                    <td>${CITIES[c].col}x</td>
+                                    <td>${(CITIES[c].tax * 100).toFixed(0)}%</td>
+                                    <td><button class="btn-secondary" onclick="relocateCity('${c}')">Relocate ($5,000)</button></td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+            document.getElementById('main-content').innerHTML = html;
+        }
 
-    if (game.age >= 60) {
+        // ==========================================
+        // GAME ENGINE: TURN LOOP & LOGIC
+        // ==========================================
+        function advanceYear() {
+            if (!state.character) return;
+            state.character.age += 1;
 
-        game.health -=
-            Math.floor(
-                Math.random() * 4
-            );
-    }
+            // Income calculations
+            let grossIncome = state.career.salary;
+            
+            // Tax calculations
+            const cityData = CITIES[state.character.city] || { tax: 0.05, col: 1.0 };
+            const effectiveTaxRate = 0.18 + cityData.tax;
+            let netIncome = grossIncome * (1 - effectiveTaxRate);
 
+            // Expenses calculation
+            let annualExpenses = calculateAnnualExpenses();
 
-    /* RANDOM EVENTS */
+            // Investment Returns
+            calculateInvestmentReturns();
 
-    randomEvent();
-
-
-    if (game.health <= 0) {
-
-        game.alive = false;
-
-        addLog(
-            "⚰️ Your health failed."
-        );
-    }
-
-
-    saveGame();
-
-    render();
-}
-
-
-function randomEvent() {
-
-    const r = Math.random();
-
-
-    if (r < 0.06) {
-
-        game.happiness =
-            Math.min(
-                100,
-                game.happiness + 8
-            );
-
-        addLog(
-            "🎉 You had an excellent year."
-        );
-
-    }
-
-
-    else if (r < 0.11) {
-
-        game.money =
-            Math.max(
-                0,
-                game.money - 5000
-            );
-
-        addLog(
-            "💸 Unexpected expenses cost you $5,000."
-        );
-
-    }
-
-
-    else if (r < 0.16) {
-
-        game.intelligence =
-            Math.min(
-                100,
-                game.intelligence + 2
-            );
-
-        addLog(
-            "📚 You gained useful knowledge."
-        );
-
-    }
-
-
-    else if (r < 0.20) {
-
-        game.health =
-            Math.max(
-                1,
-                game.health - 5
-            );
-
-        addLog(
-            "🤒 You had a difficult health year."
-        );
-    }
-}
-
-
-/* =========================================================
-   RENDER
-========================================================= */
-
-function render() {
-
-    if (!game) {
-
-        document.getElementById("stats").innerHTML = "";
-
-        document.getElementById("nav").innerHTML = "";
-
-        document.getElementById("main").innerHTML = `
-
-            <div class="hero">
-
-                <h2>
-                    🇸🇬 Singapore Life Simulator
-                </h2>
-
-                <p>
-                    Create a new Singaporean life
-                    or continue your saved game.
-                </p>
-
-                ${button(
-                    "👶 Start New Life",
-                    "startGame()",
-                    "primary"
-                )}
-
-                ${
-                    localStorage.getItem(
-                        "SG_LIFE_V15_1"
-                    )
-                    ? button(
-                        "📂 Continue Saved Life",
-                        "loadGame()",
-                        "blue"
-                    )
-                    : ""
+            // Real Estate mortgage payment & appreciation
+            state.realEstate.forEach(p => {
+                p.value *= 1.03; // 3% annual appreciation
+                if (p.mortgage > 0) {
+                    let pay = Math.min(p.mortgage, 20000);
+                    p.mortgage -= pay;
+                    annualExpenses += pay;
                 }
+            });
 
-            </div>
-        `;
+            // Cash flow
+            let netCashflow = netIncome - annualExpenses;
+            state.finances.cash += netCashflow;
 
-        return;
-    }
+            // Random Events Engine
+            triggerRandomEvents();
 
+            addLog(`Age ${state.character.age}: Earned ${formatMoney(grossIncome)}, expenses were ${formatMoney(annualExpenses)}.`);
 
-    renderStats();
+            // Health decay with age
+            if (state.character.age > 50) {
+                state.stats.health -= Math.floor(Math.random() * 3);
+            }
 
-    renderNav();
+            // Check endgame
+            if (state.stats.health <= 0 || state.character.age >= 90) {
+                triggerDeathScreen();
+                return;
+            }
 
-    homePage();
-}
+            updateUI();
+            switchTab(state.activeTab);
+        }
 
+        function calculateAnnualExpenses() {
+            const col = CITIES[state.character.city]?.col || 1.0;
+            let baseLivingCost = 25000 * col;
+            return baseLivingCost;
+        }
 
-/* =========================================================
-   START
-========================================================= */
+        function calculateNetWorth() {
+            let total = state.finances.cash + state.investments.stocks + state.investments.bonds + state.investments.crypto;
+            state.realEstate.forEach(p => {
+                total += (p.value - p.mortgage);
+            });
+            return total;
+        }
 
-render();
+        function calculateInvestmentReturns() {
+            // Market cycles
+            const r = Math.random();
+            if (r < 0.2) state.marketCycle = 'Bear Market';
+            else if (r < 0.8) state.marketCycle = 'Bull Market';
+            else state.marketCycle = 'Recession';
 
-</script>
+            let stockReturn = state.marketCycle === 'Bull Market' ? 0.10 : (state.marketCycle === 'Bear Market' ? -0.05 : -0.15);
+            state.investments.stocks *= (1 + stockReturn);
+            state.investments.bonds *= 1.04;
+            state.investments.crypto *= (1 + (Math.random() * 0.4 - 0.18));
+        }
 
+        // ==========================================
+        // CAREER & EDUCATION ACTIONS
+        // ==========================================
+        function applyToUniversity(schoolName) {
+            const univ = UNIVERSITIES.find(u => u.name === schoolName);
+            if (state.finances.cash < univ.tuition && state.character.background === 'Working Class') {
+                showModal("Admission Deferred", `You were accepted to ${schoolName}, but cannot afford the tuition without taking debt.`, [
+                    { text: "Take Student Loans", action: () => { state.finances.cash -= univ.tuition; state.education.degree = "Bachelor's Degree"; state.education.school = schoolName; addLog(`Enrolled at ${schoolName}.`); closeModal(); updateUI(); renderEducation(); } },
+                    { text: "Decline Offer", action: closeModal }
+                ]);
+            } else {
+                state.education.degree = "Bachelor's Degree";
+                state.education.school = schoolName;
+                state.finances.cash -= univ.tuition;
+                addLog(`Accepted and enrolled at ${schoolName}!`);
+                updateUI();
+                renderEducation();
+            }
+        }
+
+        function applyForJob(ladder, company, baseSalary) {
+            state.career.title = CAREER_LADDERS[ladder][0];
+            state.career.company = company;
+            state.career.salary = baseSalary;
+            state.career.ladder = ladder;
+            state.career.level = 0;
+            addLog(`Hired as ${state.career.title} at ${company}!`);
+            updateUI();
+            renderCareer();
+        }
+
+        function workHard() {
+            state.career.performance = Math.min(100, state.career.performance + 15);
+            state.stats.stress = Math.min(100, state.stats.stress + 10);
+            addLog("Put in extra hours at work.");
+            updateUI();
+            renderCareer();
+        }
+
+        function requestPromotion() {
+            if (state.career.performance >= 80 && state.career.ladder) {
+                const nextLevel = state.career.level + 1;
+                const ladderTitles = CAREER_LADDERS[state.career.ladder];
+                if (nextLevel < ladderTitles.length) {
+                    state.career.level = nextLevel;
+                    state.career.title = ladderTitles[nextLevel];
+                    state.career.salary = Math.floor(state.career.salary * 1.3);
+                    state.career.performance = 60;
+                    addLog(`Promoted to ${state.career.title}! Salary increased to ${formatMoney(state.career.salary)}.`);
+                    showModal("PROMOTION GRANTED!", `Your hard work paid off. You are now ${state.career.title}.`, [{ text: "Awesome!", action: closeModal }]);
+                } else {
+                    showModal("Max Level Reached", "You are already at the top of this career track.", [{ text: "OK", action: closeModal }]);
+                }
+            } else {
+                showModal("Promotion Denied", "Your performance review wasn't high enough for a promotion this year.", [{ text: "I'll work harder", action: closeModal }]);
+            }
+            updateUI();
+            renderCareer();
+        }
+
+        function quitJob() {
+            state.career.title = "Unemployed";
+            state.career.company = "None";
+            state.career.salary = 0;
+            addLog("Resigned from job.");
+            updateUI();
+            renderCareer();
+        }
+
+        // ==========================================
+        // INVESTMENT & PROPERTY ACTIONS
+        // ==========================================
+        function investMoney(type) {
+            const amount = 10000;
+            if (state.finances.cash >= amount) {
+                state.finances.cash -= amount;
+                state.investments[type] += amount;
+                addLog(`Invested ${formatMoney(amount)} into ${type}.`);
+                updateUI();
+                renderFinance();
+            } else {
+                showModal("Insufficient Cash", "You need at least $10,000 cash to place an investment.", [{ text: "OK", action: closeModal }]);
+            }
+        }
+
+        function buyProperty(name, price) {
+            const downPayment = price * 0.20;
+            if (state.finances.cash >= downPayment) {
+                state.finances.cash -= downPayment;
+                state.realEstate.push({ name: name, value: price, mortgage: price - downPayment });
+                addLog(`Purchased ${name} for ${formatMoney(price)} with ${formatMoney(downPayment)} down.`);
+                updateUI();
+                renderRealEstate();
+            } else {
+                showModal("Insufficient Down Payment", `You need at least ${formatMoney(downPayment)} cash for the 20% down payment.`, [{ text: "OK", action: closeModal }]);
+            }
+        }
+
+        function spendQualityTime(index) {
+            const rel = state.relationships[index];
+            rel.closeness = Math.min(100, rel.closeness + 10);
+            state.stats.happiness = Math.min(100, state.stats.happiness + 5);
+            addLog(`Spent quality time with ${rel.name}.`);
+            updateUI();
+            renderRelationships();
+        }
+
+        function relocateCity(city) {
+            if (state.finances.cash >= 5000) {
+                state.finances.cash -= 5000;
+                state.character.city = city;
+                addLog(`Relocated to ${city}.`);
+                updateUI();
+                renderRelocate();
+            }
+        }
+
+        // ==========================================
+        // RANDOM EVENTS & MODALS
+        // ==========================================
+        function triggerRandomEvents() {
+            const roll = Math.random();
+            if (roll < 0.15) {
+                showModal("Market Opportunity", "A close contact approaches you with an early-stage startup investment opportunity.", [
+                    { text: "Invest $10,000", action: () => { 
+                        if(state.finances.cash>=10000) { 
+                            state.finances.cash-=10000; 
+                            if(Math.random()>0.5){ state.finances.cash+=50000; addLog("Startup investment paid off 5x!"); } 
+                            else { addLog("Startup went bankrupt."); }
+                        } closeModal(); updateUI();
+                    }},
+                    { text: "Pass", action: closeModal }
+                ]);
+            } else if (roll < 0.25) {
+                showModal("Health Event", "You've been feeling burnt out from high stress levels.", [
+                    { text: "Take a vacation (-$3,000, +Health)", action: () => { state.finances.cash-=3000; state.stats.health=Math.min(100, state.stats.health+15); closeModal(); updateUI(); } },
+                    { text: "Power through", action: () => { state.stats.health-=10; closeModal(); updateUI(); } }
+                ]);
+            }
+        }
+
+        function triggerDeathScreen() {
+            showModal("THE JOURNEY ENDS", `You passed away at age ${state.character.age}. Final Lifetime Net Worth: ${formatMoney(calculateNetWorth())}.`, [
+                { text: "Start New Life", action: () => { closeModal(); showCharacterCreation(); } }
+            ]);
+        }
+
+        function showModal(title, body, options) {
+            document.getElementById('modal-title').innerText = title;
+            document.getElementById('modal-body').innerText = body;
+            const container = document.getElementById('modal-actions');
+            container.innerHTML = '';
+            options.forEach(opt => {
+                const btn = document.createElement('button');
+                btn.className = 'option-btn';
+                btn.innerText = opt.text;
+                btn.onclick = opt.action;
+                container.appendChild(btn);
+            });
+            document.getElementById('modal-container').classList.remove('hidden');
+        }
+
+        function closeModal() {
+            document.getElementById('modal-container').classList.add('hidden');
+        }
+
+        // ==========================================
+        // LOGGING & UTILITIES
+        // ==========================================
+        function addLog(msg) {
+            state.logs.unshift({ age: state.character?.age || 18, text: msg });
+        }
+
+        function renderTimelineLogs() {
+            const container = document.getElementById('timeline-logs');
+            container.innerHTML = state.logs.map(l => `
+                <div class="log-entry">
+                    <div class="log-age">Age ${l.age}</div>
+                    <div>${l.text}</div>
+                </div>
+            `).join('');
+        }
+
+        function formatMoney(num) {
+            return '$' + Math.floor(num).toLocaleString();
+        }
+
+        function getIndustryForLadder(ladder) {
+            if (ladder === 'Software Engineer') return 'Tech';
+            if (ladder === 'Finance Analyst') return 'Finance';
+            if (ladder === 'Management Consultant') return 'Consulting';
+            if (ladder === 'Corporate Attorney') return 'Law';
+            if (ladder === 'Physician') return 'Healthcare';
+            return 'Tech';
+        }
+
+        // ==========================================
+        // PERSISTENCE (SAVE / LOAD)
+        // ==========================================
+        function saveGame() {
+            localStorage.setItem('american_dream_save', JSON.stringify(state));
+            alert("Game Saved Successfully!");
+        }
+
+        function loadGame() {
+            const saved = localStorage.getItem('american_dream_save');
+            if (saved) {
+                state = JSON.parse(saved);
+                updateUI();
+                renderDashboard();
+            }
+        }
+
+        function resetGamePrompt() {
+            if (confirm("Are you sure you want to restart and start a new life?")) {
+                localStorage.removeItem('american_dream_save');
+                location.reload();
+            }
+        }
+    </script>
 </body>
 </html>
